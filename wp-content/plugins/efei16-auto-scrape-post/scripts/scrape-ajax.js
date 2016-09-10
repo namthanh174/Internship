@@ -17,24 +17,22 @@ jQuery(document).ready(function($){
 		$.post(ajaxurl,data,function(response){
 			 
 
-			 // if(response.hasOwnProperty('error')) {
-			 // 			$('#wait').hide();
-				// 		$('.load').html('<b>Invalid URL</b>');
-				// 	}
-				// 	else if(response == false)
-				// 	{
-				// 		$('#wait').hide();
-				// 		$('.load').html('<b>Invalid URL</b>');
-				// 	}
-				// 	else {
-				// 		$('#wait').hide();
-				// 		$('.load').html("The post with id "+response+" has been posted.");
-				// 	}
-
-
-					$('#wait').hide();
+			 if(response.hasOwnProperty('error')) {
+			 			$('#wait').hide();
+						$('.load').html('<b>Invalid URL</b>');
+					}
+					else if(response == false)
+					{
+						$('#wait').hide();
+						$('.load').html('<b>Invalid URL</b>');
+					}
+					else {
+						$('#wait').hide();
 						$('.load').html("The post with id "+response+" has been posted.");
+					}
 
+
+					
 				
 
 
