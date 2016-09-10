@@ -1,0 +1,17 @@
+
+
+.load {
+	
+	color: blue;
+	font-size: 20px;
+	padding-left: 40%;
+}
+
+
+#wait {
+	display:none;
+	width: 40%;
+	height: 40%;
+	padding-top: 0;
+	padding-left: 30%;
+}
