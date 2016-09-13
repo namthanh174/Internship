@@ -1,16 +1,20 @@
 jQuery(document).ready(function($){
+
 	$('#scrape-form').submit(function(){
 		
 		$('#wait').show();
 		
-
+		var selected = [];
+			$('#type input:checked').each(function() {
+			    selected.push($(this).attr('id'));
+			});
 
 		var url = $('#url').val();
-		var type = $('#type').val();
+		// var type = $('#type').val();
 		
 		data = {action: 'scrape_process_ajax',
 				url:url,
-				type:type
+				type:selected
 			};
 		
 		
@@ -28,16 +32,9 @@ jQuery(document).ready(function($){
 					}
 					else {
 						$('#wait').hide();
-						$('.load').html("The post with id "+response+" has been posted.");
+						$('.load').html(response);
 					}
 
-
-					
-				
-
-
-
-				
 			});
 
 
@@ -46,3 +43,6 @@ jQuery(document).ready(function($){
 	});
 });
 
+
+
+ 

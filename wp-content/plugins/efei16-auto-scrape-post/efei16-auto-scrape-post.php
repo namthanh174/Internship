@@ -17,36 +17,38 @@
     add_action('admin_menu','scrape_admin_page');
 
     function scrape_render_admin(){
-           
             $args = array("hide_empty" => 0,
-                          "type"      => "post",      
+                          "type"      => "post", 
                           "orderby"   => "name",
-                          "order"     => "ASC" );
-                  $post_categories = get_categories($args);
+                          "order"     => "ASC" 
+                          );
+            $post_categories = get_categories($args);
                                                   
                   ?>
-                  <h2><?php _e('Auto Scrape And Post','scrape'); ?></h2>
+                  <h2>Auto Scrape And Post</h2>
 
                   <div class="container">
                         <form action='' method='POST' id='scrape-form'>
                                   
-                                  <div><span>URL :</span> </div>
+                                  <div><span><b>URL :</b></span> </div>
                                   <input type="text" id="url" style="width:100%">
 
-                                  <div><span>Categories :</span></div>
-                                  <select id='type' name='type' style="width:100%">
-                                                <?php
-                                                 foreach ( $post_categories  as $category ) { ?>
-                                                <option value="<?php echo $category->cat_ID; ?>">
-                                                  <?php echo $category->cat_name; ?>                                                  
-                                                </option>
-                                                <?php }?>
-                                              </select>
+                                  <div><span><b>News's Category :</b></span></div>
+                                         
+
+                                    <div id="type">
+                                     <?php
+                                      foreach ( $post_categories  as $category )
+
+                                       { ?>
+                                      <input type='checkbox' class='type' id="<?php echo $category->cat_ID; ?>" /><label><?php echo $category->cat_name; ?></label><br />
+                                      <?php }?>
+                                    </div>
+                                   
                                   
-                                  
-                                  <div><input type="submit" value="<?php _e('Submit','scrape'); ?>" id="getresult"></div>
+                                  <div><input type="submit" value="Submit" id="getresult"></div>
                             
-                      </form>
+                          </form>
                       <div id="wait"><img  src="<?php echo plugin_dir_url(__FILE__).'images/waiting.gif'; ?>"></div>
                       <br />
                       <div class="load"></div>
@@ -79,99 +81,49 @@
 
     function scrape_process_ajax(){
               $url = $_POST['url'];
+              //$url = str_replace('%', '', $$url);
               $category_id = $_POST['type'] ;
 
-
-
-              if(!filter_var($url, FILTER_VALIDATE_URL)) {
-                json_encode(array('error'=>'invalid_url'));
-                die();
-              }
-              else {
+              // if(!filter_var($url, FILTER_VALIDATE_URL)) {
+              //   json_encode(array('error'=>'invalid_url'));
+              //   die();
+              // }
+              // else {
                 // $url = parse_url($url, PHP_URL_HOST);
                 // echo $url;exit();
+              $domain_url = str_replace('www.','',parse_url($url, PHP_URL_HOST));
+              
+              
 
-                $raw_url = parse_url($url, PHP_URL_HOST);
-                $page = scrape($url);                
-                $title = fetchdata($page,"<title>", "</title>");
+              if(!check_supported_url($domain_url)){
+                exit('Sorry, this url is not supported');
+              }
+              //$content = scrape($url);
+              
 
+              $list_article_urls = check_category($domain_url,$url);
+             //$list_article_urls =  array_filter(check_category($domain_url,$url));
+              // echo "<pre>";
+              // var_dump($list_article_urls);exit();
+              // echo "</pre>";
+              if(is_array($list_article_urls)){
+                foreach($list_article_urls as $article_url){
+                scrape_post_one_article($article_url,$category_id,$domain_url);
+                }
+              }else{
+                scrape_post_one_article($list_article_urls,$category_id,$domain_url);
+              }
+              
+              //scrape_post_one_article($list_article_urls,$category_id,$domain_url);
+              
+              //scrape_post_one_article($url,$category_id,$domain_url);
 
-                //Test
-                // $data = $page;
-                // $start ="itemprop='description articleBody'>";
-                // $end = "<center>";
-                // $data = stristr($data, $start); // Stripping all data from before $start
-                // //echo $data;exit();
-                // $data = substr($data, strlen($start));  // Stripping $start
-                // //echo $data;exit();
-                // $stop = stripos($data, $end);   // Getting the position of the $end of the data to scrape
-                // //echo $stop;exit();
-                // $data = substr($data, 0, $stop);    // Stripping 
-                // echo $data;exit();
-                //End Test
-                 
+              
 
-
-                $content = filter_content($page,$raw_url);
-               //echo $content;exit();
-                
-                //Get image url
-                //$image_url = fetchdata($content, "src=\"", "?w=");
-                $image_url = fetchdata($content, "src=\"", "\"");
-                //echo $image_url;exit();
-
-               // Create post object
-                $my_post = array(
-                  'post_title'    => $title ,
-                  'post_content'  => $content,
-                  'post_status'   => 'publish',
-                  'post_author'   => 1,
-                  'tax_input' => array( 'category' => $category_id) 
-                  
-                );
-                 
-                
-                
-                // Insert the post into the database
-                $post_id = wp_insert_post( $my_post );
-
-                
-                //Insert feature image
-                  $image_url_new = parse_url($image_url, PHP_URL_SCHEME)."://";
-                  $image_url_new .= parse_url($image_url, PHP_URL_HOST);
-                  $image_url_new .= parse_url($image_url, PHP_URL_PATH);
-                  $image_url_new = str_replace('%', '', $image_url_new);
-                  //echo $image_url_new;exit();
-
-
-                  $upload_dir = wp_upload_dir();
-                  $image_data = file_get_contents($image_url_new);
-                  $filename = basename($image_url_new);
-                  if(wp_mkdir_p($upload_dir['path']))
-                      $file = $upload_dir['path'] . '/' . $filename;
-                  else
-                      $file = $upload_dir['basedir'] . '/' . $filename;
-                  file_put_contents($file, $image_data);
-
-                  $wp_filetype = wp_check_filetype($filename, null );
-                  $attachment = array(
-                      'post_mime_type' => $wp_filetype['type'],
-                      'post_title' => sanitize_file_name($filename),
-                      'post_content' => '',
-                      'post_status' => 'inherit'
-                  );
-                  $attach_id = wp_insert_attachment( $attachment, $file, $post_id );
-                  require_once(ABSPATH . 'wp-admin/includes/image.php');
-                  $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
-                  wp_update_attachment_metadata( $attach_id, $attach_data );
-
-                   //set_post_thumbnail( $post_id, $attach_id );
-                    
-
-                  echo $post_id ;
-                  exit();
-                 
-        }
+              
+              exit('Completed');
+               
+        //}
 
 
                 
@@ -200,40 +152,172 @@
     }
 
 
-    function filter_content($page,$raw_url){
+    function filter_content($page,$domain_url){
 
-        if($raw_url == 'techcrunch.com')
+        if($domain_url == 'techcrunch.com')
         {
+          
           $start = "<div class=\"article-entry text\">";
           $end = "<div id=\"social-after-wrapper\" class=\"cf social-share social-share-inline\">";  
         }
-        else if($raw_url == 'www.marrybaby.vn')
+        if($domain_url == 'marrybaby.vn')
         {
-          
-
           $start = "<div class=\"article-details-content-details\">";
           $end = "<div class=\"article-footer-block item-clear-float\">";
         }
-        else if($raw_url == 'www.tintucnongnghiep.com')
+       if($domain_url == 'tintucnongnghiep.com')
         {
           $start ="itemprop='description articleBody'>";
           $end = "<center>";
         }
-        else
-        {
-          $start = "<div class=\"article-entry text\">";
-          $end = "<div id=\"social-after-wrapper\" class=\"cf social-share social-share-inline\">";
-        }
-            
-            
+       
+
            $content = fetchdata($page,$start,$end);
            return $content;
     }
 
 
 
- 
+  function check_supported_url($url){
+      $supported_url = array('techcrunch.com','marrybaby.vn','tintucnongnghiep.com');
+      if(in_array($url,$supported_url))
+        return true;
+      return false;
+  }
 
+
+  function check_category($domain_url,$url){
+      $content = scrape($url);
+     
+      if(strpos($content, "<h1 class=\"cat-tag-title\">") !== false)
+        {
+          $result = fetchdata($content, "<ul class=\"river\">", "<div class=\"river-nav\">");
+          $urls = explode("<div class=\"block-content",$result);
+
+          foreach($urls as $url) {
+            $list_url[] = fetchdata($url, "<h2 class=\"post-title\"><a href=\"", "\"");
+          }
+
+          //$list_url[] = fetchdata($content, "<h2 class=\"post-title\"><a href=\"", "\"");  
+           
+          return $list_url;
+        }else if($domain_url == 'marrybaby.vn')
+        {
+         
+          $result = fetchdata($content, "<ul class=\"category-article-list\">", "<div class=\"category-level2-rcol f-right\">");
+          $urls = explode("<div class=\"item-clear-float",$result);
+
+          foreach($urls as $url) {
+            $list_url[] = fetchdata($url, "<a href=\"", "\"");
+          }
+           
+          return $list_url;
+          
+        }else if($domain_url == 'tintucnongnghiep.com')
+        {
+          $result = fetchdata($content, "<div id='singlepage'>", "<div id='sidebar'>");
+          $urls = explode("<article class='item-list'",$result);
+
+          foreach($urls as $url) {
+            $list_url[] = fetchdata($url, "<a href='","'");
+          }
+           
+          return $list_url;
+          
+        }else{
+          return $url;
+        }
+
+        
+
+  }
+
+
+
+
+
+  function scrape_post_one_article($url,$category_id,$domain_url){
+
+
+                
+
+                $page = scrape($url);
+
+                $title = fetchdata($page,"<title>", "</title>");
+
+                if (!get_page_by_title($title, 'OBJECT', 'post') ){
+
+
+               
+
+
+                $content = filter_content($page,$domain_url);
+
+
+                //Get image url
+                
+                $image_url = fetchdata($content, "src=\"", "\"");
+
+                // Create post object
+                $my_post = array(
+                  'post_title'    => $title ,
+                  'post_content'  => $content,
+                  'post_status'   => 'publish',
+                  'post_author'   => 1,
+                  'tax_input' => array( 'category' => $category_id) 
+                  
+                );
+
+                // Insert the post into the database
+
+                $post_id = wp_insert_post( $my_post );
+               
+
+                //Insert feature image
+                insert_feature_images($image_url);
+              }
+               
+               
+               
+                
+                
+                    
+
+                 //echo "The post with id ".$post_id." has been posted." ;
+  }
+
+
+
+  function insert_feature_images($image_url){
+                  $image_url_new = parse_url($image_url, PHP_URL_SCHEME)."://";
+                  $image_url_new .= parse_url($image_url, PHP_URL_HOST);
+                  $image_url_new .= parse_url($image_url, PHP_URL_PATH);
+                  $image_url_new = str_replace('%', '', $image_url_new);
+                  
+
+                  $upload_dir = wp_upload_dir();
+                  $image_data = file_get_contents($image_url_new);
+                  $filename = basename($image_url_new);
+                  if(wp_mkdir_p($upload_dir['path']))
+                      $file = $upload_dir['path'] . '/' . $filename;
+                  else
+                      $file = $upload_dir['basedir'] . '/' . $filename;
+                  file_put_contents($file, $image_data);
+
+                  $wp_filetype = wp_check_filetype($filename, null );
+                  $attachment = array(
+                      'post_mime_type' => $wp_filetype['type'],
+                      'post_title' => sanitize_file_name($filename),
+                      'post_content' => '',
+                      'post_status' => 'inherit'
+                  );
+                  $attach_id = wp_insert_attachment( $attachment, $file, $post_id );
+                  require_once(ABSPATH . 'wp-admin/includes/image.php');
+                  $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+                  wp_update_attachment_metadata( $attach_id, $attach_data );
+
+                   //set_post_thumbnail( $post_id, $attach_id );
+  }
 
 
 
