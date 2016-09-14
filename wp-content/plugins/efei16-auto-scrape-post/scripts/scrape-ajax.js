@@ -20,21 +20,22 @@ jQuery(document).ready(function($){
 		
 		$.post(ajaxurl,data,function(response){
 			 
-
+			
 			 if(response.hasOwnProperty('error')) {
 			 			$('#wait').hide();
-						$('.load').html('<b>Invalid URL</b>');
+						$('.load').html('<b>Invalid URL 1</b>');
 					}
 					else if(response == false)
 					{
 						$('#wait').hide();
-						$('.load').html('<b>Invalid URL</b>');
+						$('.load').html('<b>Invalid URL 2</b>');
 					}
 					else {
 						$('#wait').hide();
 						$('.load').html(response);
 					}
 
+				
 			});
 
 
