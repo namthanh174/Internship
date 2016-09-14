@@ -3,6 +3,11 @@ jQuery(document).ready(function($){
 	$('#scrape-form').submit(function(){
 		
 		$('#wait').show();
+
+
+		
+
+
 		
 		var selected = [];
 			$('#type input:checked').each(function() {
@@ -35,6 +40,7 @@ jQuery(document).ready(function($){
 						$('.load').html(response);
 					}
 
+					
 				
 			});
 

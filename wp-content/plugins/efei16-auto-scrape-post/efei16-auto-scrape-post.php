@@ -98,22 +98,27 @@
                 exit('Sorry, this url is not supported');
               }
               //$content = scrape($url);
-              
-
+              $number=1;
               $list_article_urls = check_category($domain_url,$url);
              // $list_article_urls =  array_filter(check_category($domain_url,$url));
-             //  echo "<pre>";
-             //  var_dump($list_article_urls);exit();
-             //  echo "</pre>";
+              // echo "<pre>";
+              // var_dump($list_article_urls);exit();
+              // echo "</pre>";
               if(is_array($list_article_urls)){
                 $list_article_urls =  array_filter($list_article_urls);
-                $number = 0;
-                foreach($list_article_urls as $article_url)
-                {
-                  scrape_post_one_article($article_url,$category_id,$domain_url);
-                  $number++;
+
+                // foreach($list_article_urls as $article_url)
+                // {
+                //   $check = scrape_post_one_article($article_url,$category_id,$domain_url);
+                // }
+                $i = count($list_article_urls);
+                while($i>0){
+                  
+                  scrape_post_one_article($list_article_urls[$i],$category_id,$domain_url);
+                    
+                  $i--;
                 }
-                echo $number;
+                echo  $number;
                 exit();
                 
               }
@@ -160,21 +165,27 @@
         if($domain_url == 'techcrunch.com')
         {
           
-          $start = "<div class=\"article-entry text\">";
-          $end = "<div id=\"social-after-wrapper\" class=\"cf social-share social-share-inline\">";  
+          // $start = "<div class=\"article-entry text";
+          // $end = "<div id=\"social-after-wrapper\"";
+          return $page;   
+           
         }
         if($domain_url == 'marrybaby.vn')
         {
           $start = "<div class=\"article-details-content-details\">";
           $end = "<div class=\"article-footer-block item-clear-float\">";
+           
         }
-       if($domain_url == 'tintucnongnghiep.com')
+        if($domain_url == 'tintucnongnghiep.com')
         {
           $start ="itemprop='description articleBody'>";
           $end = "<center>";
+          
         }
+        $content = fetchdata($page,$start,$end);
+        
+       return $content;
        
-        return fetchdata($page,$start,$end);
     }
 
 
@@ -247,24 +258,36 @@
 
                 $content = filter_content($page,$domain_url);
 
+                
+                 //Get image url
+                        $image_urls = explode("<img",$content);
+                    
+                        
+                        //$image_url = fetchdata($content, "src=\"", "\"");
+                        $image_url = fetchdata($image_urls[1],"src=\"", "\"");
 
-                //Get image url
-                $image_url = explode($content,"<img");
-                $image_url = fetchdata($content, "src=\"", "\"");
 
-                //Create post object
-                $my_post = array(
-                  'post_title'    => $title ,
-                  'post_content'  => $content,
-                  'post_status'   => 'publish',
-                  'post_author'   => 1,
-                  'tax_input' => array( 'category' => $category_id) 
-                  
-                );
-                // Insert the post into the database
-                $post_id = wp_insert_post( $my_post );
-                //Insert feature image
-                insert_feature_images($image_url,$post_id);
+
+                        //Create post object
+                        $my_post = array(
+                          'post_title'    => $title ,
+                          'post_content'  => $content,
+                          'post_status'   => 'publish',
+                          'post_author'   => 1,
+                          'tax_input' => array( 'category' => $category_id) 
+                          
+                        );
+                        // Insert the post into the database
+                        $post_id = wp_insert_post( $my_post );
+                        //Insert feature image
+                        if($image_url != ""){
+                            $image_url = str_replace('%', '', $image_url);
+                            if(strpos($image_url, '?')){
+                              $image_url = substr($image_url, 0, strpos($image_url, '?'));
+                            }
+                           generate_featured_image($image_url,$post_id);
+                        }
+                       
                 
                 
               }
@@ -275,46 +298,63 @@
 
 
 
-  function insert_feature_images($image_url,$post_id){
-                  $image_url_new = parse_url($image_url, PHP_URL_SCHEME)."://";
-                  $image_url_new .= parse_url($image_url, PHP_URL_HOST);
-                  $image_url_new .= parse_url($image_url, PHP_URL_PATH);
-                  $image_url_new = str_replace('%', '', $image_url_new);
+  function generate_featured_image($image_url,$post_id){
+                  // $image_url_new = parse_url($image_url, PHP_URL_SCHEME)."://";
+                  // $image_url_new .= parse_url($image_url, PHP_URL_HOST);
+                  // $image_url_new .= parse_url($image_url, PHP_URL_PATH);
+                  // $image_url_new = str_replace('%', '', $image_url_new);
+
                   //$image_url_new = substr($image_url_new, 0, strpos($image_url_new, '?'));
-                  
+                  // $image_url = str_replace('%', '', $image_url);
+                  // if(strpos($image_url, '?')){
+                  //   $image_url = substr($image_url, 0, strpos($image_url, '?'));
+                  // }
+
+
+
+
+
+
+
+
 
                   $upload_dir = wp_upload_dir();
-                  $image_data = file_get_contents($image_url_new);
-                  $filename = basename($image_url_new);
+                  $image_data = file_get_contents($image_url);
+                  $filename = basename($image_url);
                   
 
                   $valid_image_types = array('gif', 'jpeg', 'png','jpg');
                   $wp_filetype = wp_check_filetype($filename, null );
+
+
+
                   if (in_array($wp_filetype["ext"], $valid_image_types)) {  
+                    
+                            if(wp_mkdir_p($upload_dir['path']))
+                            $file = $upload_dir['path'] . '/' . $filename;
+                          else
+                            $file = $upload_dir['basedir'] . '/' . $filename;
+                          file_put_contents($file, $image_data);
 
-                    if(wp_mkdir_p($upload_dir['path']))
-                      $file = $upload_dir['path'] . '/' . $filename;
-                    else
-                      $file = $upload_dir['basedir'] . '/' . $filename;
-                    file_put_contents($file, $image_data);
+                            $attachment = array(
+                            'post_mime_type' => $wp_filetype['type'],
+                            'post_title' => sanitize_file_name($filename),
+                            'post_content' => '',
+                            'post_status' => 'inherit',
+                            );
+                            $attach_id = wp_insert_attachment( $attachment, $file, $post_id );
+                             require_once(ABSPATH . 'wp-admin/includes/image.php');
+                             $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+                             wp_update_attachment_metadata( $attach_id, $attach_data );
 
-                      $attachment = array(
-                      'post_mime_type' => $wp_filetype['type'],
-                      'post_title' => sanitize_file_name($filename),
-                      'post_content' => '',
-                      'post_status' => 'inherit'
-                      );
-                      $attach_id = wp_insert_attachment( $attachment, $file, $post_id );
-                       require_once(ABSPATH . 'wp-admin/includes/image.php');
-                       $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
-                      wp_update_attachment_metadata( $attach_id, $attach_data );
 
-                      set_post_thumbnail( $post_id, $attach_id );
+                            //set_post_thumbnail( $post_id, $attach_id );
 
-                }
+                  }
 
                  
-                  
+
+                 
 
 
 
