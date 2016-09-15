@@ -88,7 +88,6 @@ function scrape_process_ajax() {
 
         if (is_array($list_article_urls)) {
             $list_article_urls = array_filter($list_article_urls);
-
             foreach ($list_article_urls as $article_url) {
                 $check = scrape_post_one_article($article_url, $category_id, $domain_url);
                 $number++;
@@ -209,6 +208,10 @@ function scrape_post_one_article($url, $category_id, $domain_url) {
         );
         // Insert the post into the database
         $post_id = wp_insert_post($my_post, true);
+        
+         //Insert feature image
+
+        generate_featured_image($image_url, $post_id);
     }
 //    else {
 //        $my_post = array(
@@ -225,9 +228,7 @@ function scrape_post_one_article($url, $category_id, $domain_url) {
 //    
 //    
 //    
-    //Insert feature image
-
-    generate_featured_image($image_url, $post_id);
+   
 
 
 
