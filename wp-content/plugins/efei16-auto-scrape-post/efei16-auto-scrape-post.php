@@ -8,14 +8,31 @@
   Author URI: http://www.efe.com.vn/thanh_vo
  */
 
-function scrape_admin_page() {
-    global $scrape_settings;
-    $scrape_settings = add_menu_page(__('Admin Scrape Ajax', 'scrape'), __('EFEI-16 Auto Scrape And Post', 'scrape'), 'manage_options', 'admin-scrape-ajax', 'scrape_render_admin');
+
+
+if (is_admin()) {
+    add_action('admin_menu', 'scrape_admin_page');
+    add_action('admin_menu', 'wp_edit_admin_menus');
 }
 
-add_action('admin_menu', 'scrape_admin_page');
+function wp_edit_admin_menus() {
+    global $submenu;
 
-function scrape_render_admin() {
+    if (current_user_can('activate_plugins')) {
+        $submenu['wp-scraper-admin'][0][0] = 'Single Scrape';
+    }
+}
+
+function scrape_admin_page() {
+
+    //add_menu_page(__('Admin Scrape Ajax', 'scrape'), __('EFEI-16 Auto Scrape And Post', 'scrape'), 'manage_options', 'admin-scrape-ajax', 'scrape_render_admin');
+    add_menu_page('EFEI-16-Auto-Scrape-And-Post', 'EFEI-16 Auto Scrape And Post', 'activate_plugins', 'wp-scraper-admin', 'wp_scrape_single');
+    //add_submenu_page('EFEI-16 Auto Scrape And Post', 'Single Scrape', 'manage_options', __FILE__.'/single', 'scrape_render_admin');
+    add_submenu_page('wp-scraper-admin', 'Multiple Scrape', 'Multiple Scrape', 'activate_plugins', 'wp-scraper-multiple-menu', 'wp_scrape_multiple');
+    //add_submenu_page(__FILE__, 'About', 'About', 'manage_options', __FILE__.'/about', 'clivern_render_about_page');
+}
+
+function wp_scrape_single() {
     $args = array("hide_empty" => 0,
         "type" => "post",
         "orderby" => "name",
@@ -23,7 +40,8 @@ function scrape_render_admin() {
     );
     $post_categories = get_categories($args);
     ?>
-    <h2>Auto Scrape And Post</h2>
+
+    <h2>Single Scrape</h2>
 
     <div class="container">
         <form action='' method='POST' id='scrape-form'>
@@ -35,9 +53,50 @@ function scrape_render_admin() {
 
 
             <div id="type">
-                <?php
-                foreach ($post_categories as $category) {
-                    ?>
+    <?php
+    foreach ($post_categories as $category) {
+        ?>
+                    <input type='checkbox' class='type' id="<?php echo $category->cat_ID; ?>" /><label><?php echo $category->cat_name; ?></label><br />
+                <?php } ?>
+            </div>
+
+
+            <div><input type="submit" value="Submit" id="getresult"></div>
+
+        </form>
+        <div id="wait"><img  src="<?php echo plugin_dir_url(__FILE__) . 'images/waiting.gif'; ?>"></div>
+        <br />
+        <div class="load"></div>
+
+    </div>
+
+    <?php
+}
+
+function wp_scrape_multiple() {
+    $args = array("hide_empty" => 0,
+        "type" => "post",
+        "orderby" => "name",
+        "order" => "ASC"
+    );
+    $post_categories = get_categories($args);
+    ?>
+
+    <h2>Multiple Scrape</h2>
+
+    <div class="container">
+        <form action='' method='POST' id='scrape-form'>
+
+            <div><span><b>URL :</b></span> </div>
+            <input type="text" id="url" style="width:100%">
+
+            <div><span><b>News's Category :</b></span></div>
+
+
+            <div id="type">
+    <?php
+    foreach ($post_categories as $category) {
+        ?>
                     <input type='checkbox' class='type' id="<?php echo $category->cat_ID; ?>" /><label><?php echo $category->cat_name; ?></label><br />
                 <?php } ?>
             </div>
@@ -67,7 +126,26 @@ function my_script_enqueuer() {
 }
 
 function scrape_process_ajax() {
+
+    header('Access-Control-Allow-Origin: *');
+
+    if (isset($_GET['url']) && preg_match('`^https://`', $_GET['url'])) {
+        echo file_get_contents($_GET['url']);
+        exit();
+    }
+
+
+
+
+
     $url = $_POST['url'];
+
+    $data = get_element($url);
+    //echo "aaa";die();
+    echo "<pre>";
+    var_dump($data);
+    die();
+    echo "</pre>";
 
     $category_id = $_POST['type'];
 
@@ -208,8 +286,8 @@ function scrape_post_one_article($url, $category_id, $domain_url) {
         );
         // Insert the post into the database
         $post_id = wp_insert_post($my_post, true);
-        
-         //Insert feature image
+
+        //Insert feature image
 
         generate_featured_image($image_url, $post_id);
     }
@@ -228,10 +306,6 @@ function scrape_post_one_article($url, $category_id, $domain_url) {
 //    
 //    
 //    
-   
-
-
-
     //echo "The post with id ".$post_id." has been posted." ;
 }
 
@@ -284,11 +358,113 @@ function generate_featured_image($image_url, $post_id) {
 
         $attach_data = wp_generate_attachment_metadata($attach_id, $file);
 
-
-
         wp_update_attachment_metadata($attach_id, $attach_data);
 
 
         set_post_thumbnail($post_id, $attach_id);
     }
+}
+
+function get_element($url) {
+//    $content = file_get_contents($url);
+//
+//    if (preg_match_all('%(<p[^>]*>.*?</p>)%i', $content, $regs)) {
+//            $result[] = $regs;
+//        } else {
+//            $result = "";
+//        }
+//    return $result;
+//    $doc = new DOMDocument();
+//   
+//    $doc->loadHTML(file_get_contents($url));
+//    
+//    $list_link = $doc->getElementsByTagName("a");
+//    
+//    foreach($list_link as $link){
+//        $result[] = $link->getAttribute("href");
+//    }
+//    return $result;
+}
+
+add_action('wp_ajax_scrape_process_content', 'scrape_process_content');
+
+function scrape_process_content() {
+
+
+
+    $url = $_POST['url'];  
+    $links = array();
+    foreach($url as $link){
+        $links[] = $link;
+    }
+    $category_id = $_POST['type'];
+    $content = $_POST['content'];
+    
+    echo json_encode(array("data"=>$url));exit();
+
+
+//   echo "<pre>";
+//   var_dump($url);die();
+//   echo "</pre>";
+
+
+    $list_article_urls = array_filter($url);
+    $number = 0;
+
+    foreach ($list_article_urls as $article_url) {
+        
+
+            $domain_url = str_replace('www.', '', parse_url($article_url, PHP_URL_HOST));
+
+
+            if (!check_supported_url($domain_url)) {
+                exit('Sorry, this url is not supported');
+            }
+            $url = check_category($domain_url, $article_url);
+
+
+            scrape_post_one_article($url, $category_id, $domain_url);
+            $number++;
+       
+    }
+
+    echo $number . " posts has been posted.";
+    exit();
+
+
+
+
+
+
+
+//    if (!filter_var($url, FILTER_VALIDATE_URL) === true) {
+//        json_encode(array('error' => 'invalid_url'));
+//
+//        die();
+//    } else {
+//        $number = 0;
+//        $domain_url = str_replace('www.', '', parse_url($url, PHP_URL_HOST));
+//
+//
+//        if (!check_supported_url($domain_url)) {
+//            exit('Sorry, this url is not supported');
+//        }
+//
+//        $list_article_urls = check_category($domain_url, $url);
+//
+//        if (is_array($list_article_urls)) {
+//            $list_article_urls = array_filter($list_article_urls);
+//            foreach ($list_article_urls as $article_url) {
+//                $check = scrape_post_one_article($article_url, $category_id, $domain_url);
+//                $number++;
+//            }
+//
+//            echo $number . " posts has been posted.";
+//            exit();
+//        }
+//
+//        scrape_post_one_article($list_article_urls, $category_id, $domain_url);
+//        echo ++$number . " post has been posted.";
+//        exit();
+//    }
 }
