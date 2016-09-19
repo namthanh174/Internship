@@ -393,43 +393,55 @@ function scrape_process_content() {
 
 
     $url = $_POST['url'];  
-    $links = array();
-    foreach($url as $link){
-        $links[] = $link;
-    }
     $category_id = $_POST['type'];
     $content = $_POST['content'];
     
-    echo json_encode(array("data"=>$url));exit();
+    //echo json_encode(array("data"=>$url));exit();
 
 
 //   echo "<pre>";
 //   var_dump($url);die();
 //   echo "</pre>";
-
-
-    $list_article_urls = array_filter($url);
-    $number = 0;
-
-    foreach ($list_article_urls as $article_url) {
-        
-
-            $domain_url = str_replace('www.', '', parse_url($article_url, PHP_URL_HOST));
+    
+    
+                $domain_url = str_replace('www.', '', parse_url($url, PHP_URL_HOST));
 
 
             if (!check_supported_url($domain_url)) {
                 exit('Sorry, this url is not supported');
             }
-            $url = check_category($domain_url, $article_url);
+            $url = check_category($domain_url, $url);
 
 
             scrape_post_one_article($url, $category_id, $domain_url);
-            $number++;
-       
-    }
+    
+    
+    
+    
 
-    echo $number . " posts has been posted.";
-    exit();
+
+//    $list_article_urls = array_filter($url);
+//    $number = 0;
+//
+//    foreach ($list_article_urls as $article_url) {
+//        
+//
+//            $domain_url = str_replace('www.', '', parse_url($article_url, PHP_URL_HOST));
+//
+//
+//            if (!check_supported_url($domain_url)) {
+//                exit('Sorry, this url is not supported');
+//            }
+//            $url = check_category($domain_url, $article_url);
+//
+//
+//            scrape_post_one_article($url, $category_id, $domain_url);
+//            $number++;
+//       
+//    }
+//
+//    echo $number . " posts has been posted.";
+//    exit();
 
 
 

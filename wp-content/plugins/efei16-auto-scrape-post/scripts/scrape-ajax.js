@@ -3,7 +3,8 @@ jQuery(document).ready(function ($) {
     $('#scrape-form').submit(function () {
 
         $('#wait').show();
-
+       
+        window.globalVar = 0;
 
         var selected = [];
         $('#type input:checked').each(function () {
@@ -45,47 +46,51 @@ jQuery(document).ready(function ($) {
             var urls = get_urls(response);
             var content = get_contains(response);
 //            alert(urls);
-            var data2 = {action: 'scrape_process_content',
-                url: urls,
-                content: content,
-                type: selected
-
-            };
-
-            var message = "afff";
-
-            $.ajax({
+//            var data2 = {action: 'scrape_process_content',
+//                url: urls,
+//                content: content,
+//                type: selected
+//
+//            };
+        
+            
+            $.each(urls,function(key,url){
+                $.ajax({
                 type: 'POST',
                 url: ajaxurl,
                 dataType: 'json',
                 data: {action: 'scrape_process_content',
-                    url: urls,
+                    url: url,
                     content: content,
                     type: selected
                 },
                 success: function (response) {
+                    globalVar++;
                     // uhm, maybe I don't even need this?
                     //var json = $.parseJSON(response);
 
 
                     //console.log(response.data);
-                    var content = [];
-                    $.each(response.data, function (key, value) {
-                        content.push(value);
-                    })
-                    message = content;
-                    $('.load').html(content);
-
-                    $('#wait').hide();
+//                    var content = [];
+//                    $.each(response.data, function (key, value) {
+//                        content.push(value);
+//                    })
+                   
+                    
 
                     // return response;
                 },
                 fail: function (jqXHR, textStatus, errorThrown) {
                     console.log('Could not get posts, server response: ' + textStatus + ': ' + errorThrown);
                 }
+                });
             });
 
-            alert(message);
+            
+            //$('.load').html(content);
+
+//            $('#wait').hide();
+//            alert("completed");
 
 
 
@@ -98,15 +103,17 @@ jQuery(document).ready(function ($) {
 //            });
 
 
-
-
         });
-
 
         return false;
 
 
-    });
+    }).ajaxStop(function() {
+          // place code to be executed on completion of last outstanding ajax call here
+           $('#wait').hide();
+           $('.load').html(globalVar + " posts has been posted");
+          
+        });
 
 
 
