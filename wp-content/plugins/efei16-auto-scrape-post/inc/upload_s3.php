@@ -6,9 +6,6 @@ use Aws\S3\MultipartUploader;
 use Aws\Exception\MultipartUploadException;
 
 function upload_s3($urls) {
-
-
-
     //return $urls;
 
     $key = "AKIAJ53K3XBUJTZANQ3Q";
