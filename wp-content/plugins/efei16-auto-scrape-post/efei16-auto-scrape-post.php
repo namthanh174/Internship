@@ -13,6 +13,7 @@
 if (is_admin()) {
     add_action('admin_menu', 'scrape_admin_page');
     add_action('admin_menu', 'wp_edit_admin_menus');
+    add_action('admin_init','registerSettings');
 }
 
 function wp_edit_admin_menus() {
@@ -32,6 +33,12 @@ function scrape_admin_page() {
     add_submenu_page('wp-scraper-admin', 'Settings', 'Settings', 'activate_plugins', 'wp-scraper-setting-menu', 'wp_scrape_setting');
     //add_submenu_page(__FILE__, 'About', 'About', 'manage_options', __FILE__.'/about', 'clivern_render_about_page');
 }
+
+function registerSettings(){
+	    	
+	    	register_setting('scrape_options','aws_upload_enable');
+                register_setting('scrape_options','wp_upload_enable');
+	   		}
 
 function wp_scrape_single() {
     $args = array("hide_empty" => 0,
@@ -115,50 +122,34 @@ function wp_scrape_multiple() {
     <?php
 }
 
-
-function wp_scrape_setting(){
-    $args = array("hide_empty" => 0,
-        "type" => "post",
-        "orderby" => "name",
-        "order" => "ASC"
-    );
-    $post_categories = get_categories($args);
+function wp_scrape_setting() {
+    
     ?>
 
     <h2>Settings</h2>
 
     <div class="container">
-        <form action='' method='POST' id='scrape-setting-form'>
+        <form action='options.php' method='POST' id='scrape-setting-form'>
+            <?php settings_fields( 'scrape_options' ); ?>
+            <?php do_settings_sections('scrape_options'); ?>
 
-            <div><span><b>URL Category :</b></span> </div>
-            <input type="text" id="url" style="width:100%">
-
-            <div><span><b>Category :</b></span></div>
-
-
-            <div id="type">
-                <?php
-                foreach ($post_categories as $category) {
-                    ?>
-                    <input type='checkbox' class='type' id="<?php echo $category->cat_ID; ?>" /><label><?php echo $category->cat_name; ?></label><br />
-                <?php } ?>
-            </div>
+            
+            <input type="checkbox" name="wp_upload_enable" id="wp_upload_enable" value="checked"  <?php echo get_option('wp_upload_enable') ?>  /> Upload into WP media<br>
+            <input type="checkbox" name="aws_upload_enable" id="aws_upload_enable" value="checked" <?php echo get_option('aws_upload_enable') ?> /> Upload into AWS S3 Bucket<br>
+            
+                
+    		
 
 
-            <div><input type="submit" value="Save Changes" id="post_multi"></div>
+            <div><input type="submit" value='<?php _e('Save Changes') ?>' id="save_setting"></div>
 
         </form>
-        <div id="wait"><img  src="<?php echo plugin_dir_url(__FILE__) . 'images/waiting.gif'; ?>"></div>
-        <br />
-        <div class="load"></div>
+        
 
     </div>
 
     <?php
 }
-
-
-
 
 add_action('admin_init', 'my_script_enqueuer');
 
@@ -183,15 +174,8 @@ function scrape_process_one_ajax() {
         $url = $_POST['url'];
         $category_id = $_POST['type'];
         $content = $_POST['content'];
-        
-//       
-//        $link = "http://localhost:8080/efei-16/wp-content/uploads/2016/09/219233_ahmed_mansoor-1.jpg";
-//       
-//        $links = demo($link);
-//        
-//        
-//        print_r($links);exit();
-        
+
+
         if (scrape_process_content($url, $category_id, $content)) {
             exit();
         }
@@ -278,35 +262,28 @@ function scrape_post_one_article($url, $category_id, $domain_url) {
 
 
     $post_content = filter_content($page, $domain_url);
-   
-   //Get image url    
+
+    //Get image url    
     $image_urls = explode("<img", $post_content);
-    //$image_url = fetchdata($content, "src=\"", "\"");
-   //$image_url = fetchdata($image_urls[1], "src=\"", "\"");
-    
+
+
     $list_img_link = array();
-    foreach($image_urls as $img_link){
-        $img_links = fetchdata($img_link, "src=\"", "\"");        
+    foreach ($image_urls as $img_link) {
+        $img_links = fetchdata($img_link, "src=\"", "\"");
         $list_img_link[] = $img_links;
-        
     }
-        $list_img_link = array_filter($list_img_link);
-         
-       // print_r($list_img_link);die();
-        $list_s3 = demo($list_img_link);
-        //print_r($list_s3);die();
-        $image_url = $list_s3[0];
-        //echo $image_url;die();
-        $post_content = str_replace($list_img_link, $list_s3, $post_content);
-        //$post_content = strtr($list_img_link, $list_s3, $post_content);
-        
-        //echo $post_content;die();
-    //print_r($list_s3);exit();
+    $list_img_link = array_filter($list_img_link);
     
-    
-    
-    
-    
+    	if(get_option('aws_upload_enable') == 'checked'){
+               $list_s3 = upload_aws($list_img_link);
+
+               $image_url = $list_s3[0];
+
+               $post_content = str_replace($list_img_link, $list_s3, $post_content);
+		   }
+   
+
+
 
     $check_title = get_page_by_title($post_title, 'OBJECT', 'post');
     if (empty($check_title)) {
@@ -320,109 +297,96 @@ function scrape_post_one_article($url, $category_id, $domain_url) {
         );
         // Insert the post into the database
         $post_id = wp_insert_post($my_post, true);
+        
+        
+        //Insert Images to WP Media
+        $wp_attach_image_urls = upload_wp_media($list_img_link,$post_id);
+        if(get_option('wp_upload_enable') == 'checked'){
+            $post_update_content = str_replace($list_img_link, $wp_attach_image_urls, $post_content);
+            //Update Post content for changed contents
+            $my_post_update = array(
+                'ID' =>  $post_id,
+                'post_content' => $post_update_content
 
-        //Insert feature image
-
-        generate_featured_image($image_url, $post_id);
-    }
-}
-
-function generate_featured_image($image_url, $post_id) {
-
-    $upload_dir = wp_upload_dir();
-
-    $image_data = file_get_contents($image_url);
-    if ($image_url != "") {
-        $image_url = str_replace('%', '', $image_url);
-    }
-    if (strpos($image_url, '?')) {
-        $image_url = substr($image_url, 0, strpos($image_url, '?'));
-    }
-
-
-    $filename = basename($image_url);
-
-
-    $valid_image_types = array('gif', 'jpeg', 'png', 'jpg');
-    $wp_filetype = wp_check_filetype($filename, null);
-
-
-
-    if (in_array($wp_filetype["ext"], $valid_image_types)) {
-
-        if (wp_mkdir_p($upload_dir['path']))
-            $file = $upload_dir['path'] . '/' . $filename;
-        else
-            $file = $upload_dir['basedir'] . '/' . $filename;
-        file_put_contents($file, $image_data);
-
-        $attachment = array(
-            'post_mime_type' => $wp_filetype['type'],
-            'post_title' => sanitize_file_name($filename),
-            'post_content' => '',
-            'post_status' => 'inherit',
-        );
-        $attach_id = wp_insert_attachment($attachment, $file, $post_id);
-        require_once(ABSPATH . 'wp-admin/includes/image.php');
-
-
-        $attach_data = wp_generate_attachment_metadata($attach_id, $file);
-
-        wp_update_attachment_metadata($attach_id, $attach_data);
-
-
-        set_post_thumbnail($post_id, $attach_id);
-    }
-}
-
-function upload_asv($url){
-       require_once(ABSPATH . 'wp-content/plugins/efei16-auto-scrape-post/inc/Aws/aws-autoloader.php');
-
-//        use Aws\S3\S3Client;
-//        use Aws\S3\Exception\S3Exception;
-
-        $bucket = 'thanh.vo';
-        $keyname = 'sample';
-        // $filepath should be absolute path to a file on disk                      
-        $filepath = '/path/to/image.jpg';
-
-        // Instantiate the client.
-        $s3 = S3Client::factory(array(
-            'key'    => 'AKIAJ53K3XBUJTZANQ3Q',
-            'secret' => '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'
-        ));
-
-        try {
-            // Upload data.
-            $result = $s3->putObject(array(
-                'Bucket' => $bucket,
-                'Key'    => $keyname,
-                'SourceFile'   => $filepath,
-                'ACL'    => 'public-read'
-            ));
-
-
-
-            // Print the URL to the object.
-            echo $result['ObjectURL'] . "\n";
-        } catch (S3Exception $e) {
-            echo $e->getMessage() . "\n";
+            );
+            $post_update_id = wp_update_post($my_post_update);
         }
-
-
+        
+        
+        
+    }
 }
 
 
-function demo($urls){
-    require(plugin_dir_path( __FILE__ )."inc/upload_s3.php");
+
+function upload_wp_media($image_urls,$post_id){
+    $upload_dir = wp_upload_dir();
+    $num = 0;
+    $attach_id_urls = array();
+    foreach($image_urls as $image_url){
+           $image_data = file_get_contents($image_url);
+            if ($image_url != "") {
+                $image_url = str_replace('%', '', $image_url);
+            }
+            if (strpos($image_url, '?')) {
+                $image_url = substr($image_url, 0, strpos($image_url, '?'));
+            }
+
+
+            $filename = basename($image_url);
+
+
+            $valid_image_types = array('gif', 'jpeg', 'png', 'jpg');
+            $wp_filetype = wp_check_filetype($filename, null);
+
+
+
+            if (in_array($wp_filetype["ext"], $valid_image_types)) {
+
+                if (wp_mkdir_p($upload_dir['path']))
+                    $file = $upload_dir['path'] . '/' . $filename;
+                else
+                    $file = $upload_dir['basedir'] . '/' . $filename;
+                file_put_contents($file, $image_data);
+                
+                $attachment = array(
+                    'post_mime_type' => $wp_filetype['type'],
+                    'post_title' => sanitize_file_name($filename),
+                    'post_content' => '',
+                    'post_status' => 'inherit',
+                );
+                $attach_id = wp_insert_attachment($attachment, $file, $post_id);
+                require_once(ABSPATH . 'wp-admin/includes/image.php');
+
+
+                $attach_data = wp_generate_attachment_metadata($attach_id, $file);
+                
+                $attach_id_urls[] = $attach_id;
+                wp_update_attachment_metadata($attach_id, $attach_data);
+                $num++;
+                
+                  //Insert feature image
+                if($num == 1){
+                    set_post_thumbnail($post_id, $attach_id);
+                }
+            }
+                
+    }
+    
+        $image_attach_urls = array();
+        foreach($attach_id_urls as $attach_id_url){
+            $image_attach_urls[] = wp_get_attachment_url($attach_id_url);
+
+        }
+        return $image_attach_urls;
+    
+    
+
+       
+}
+
+function upload_aws($urls) {
+    require(plugin_dir_path(__FILE__) . "inc/upload_s3.php");
     $url_s3 = upload_s3($urls);
     return $url_s3;
-    
-    
-   
 }
-
-
-
-
-
