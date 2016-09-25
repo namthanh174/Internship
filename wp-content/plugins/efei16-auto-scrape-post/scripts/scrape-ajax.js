@@ -1,6 +1,6 @@
 jQuery(document).ready(function ($) {
 
-        //$("#progressbar").hide(); 
+     
 
         window.globalVar = 0;
         
@@ -13,14 +13,11 @@ jQuery(document).ready(function ($) {
             alert("please enter url!");
             die();
         }
-        $('.result1').val = '';
-        $('.load1').val = '';
-        $('.result1').hide();
+//        $('.result1').innerHTML  = '';
+        $('.result1').empty().hide();
+      
         $('#wait1').show();
-        
-        $('.load1').hide();
-        //var progressBar = $('#progress').val();
-        //var display = $('#display').val();
+       
        
 
         var selected = [];
@@ -33,10 +30,10 @@ jQuery(document).ready(function ($) {
         $.ajax({
             type: 'POST',
             url: ajaxurl,
-            dataType: 'json',
             data : {
                 action: 'scrape_process_one_ajax',
-                url: url
+                url: url,
+                type: selected
             },
             beforeSend: function () {
                 //$("#progressbar").show();
@@ -46,58 +43,22 @@ jQuery(document).ready(function ($) {
                 
             },
             success: function(response){
-               
-              //alert(response.data)
-//               var content = get_contains(response.filter_content);
-            var content = response.filter_content;
-               
-               var img = get_img(response.filter_content);
-               
-               var title = get_title(response.data);
-               //alert(title);
-               
-               
-               
-                       $.ajax({
-                            type: 'GET',
-                            url: ajaxurl,
-                            dataType: 'json',
-                            data : {
-                                action: 'scrape_process_one_ajax',
-                                title : title,
-                                content : content,
-                                img : img,
-                                category_id : selected
-                            },
-                            success : function(response){
-                                $('.result1').show().html("<div class='title_return'>1. \"" + response.data + "\" has been posted</div><br />");
-                                $('#wait1').hide();
-                            }
-                        });
-               
-               
-               
-               
+          
+                $('.result1').show().append("<div class='title_return'>1. \"" + response + "\" has been posted.</div><br />");
+                  //$('.result1').show().append("<div class='title_return'>Completed</div><br />");
+                   $('#wait1').hide();
+                   $('.result2').hide();
+          
+                 
+                  
+             
+                      
             },
             error: function(error){
                 
             }
             
             
-        }).done(function(response){
-             var data = response.data;
-
-             if(data){
-//                 
-//                  $('.result1').show().append("<div class='title_return'>1. \"" + data + "\" has been posted</div><br />");
-//                   $('#wait1').hide();
-             }            
-             else{
-//                 $('.result1').show().append("<div>This post has been posted before</div><br />");
-//                  $('#wait1').hide();
-             }
-             
-             
         });
 
 
@@ -116,14 +77,15 @@ jQuery(document).ready(function ($) {
             die();
         }
        
-        
+
+        $('.result2').hide().empty();
         
         //$("#progressbar").show();
-         $('.result2').val = '';
-        $('.load2').val = '';
+         globalVar = 0;
+        
         $('#wait2').show();
         //$('.load2').hide();
-        $('.result2').hide();
+       
 
        
 
@@ -161,7 +123,7 @@ jQuery(document).ready(function ($) {
                             var data = response.data;
                             globalVar++;
                             if(data){
-                                $('.result2').show().append("<div class='title_return'>"+globalVar+".  \"" + data + "\" has been posted</div> <br />");
+                                $('.result2').show().append("<div class='title_return'>"+globalVar+".  \"" + data + "\" has been posted.</div> <br />");
                             }
                             
                             
@@ -190,13 +152,14 @@ jQuery(document).ready(function ($) {
         //$('#wait2').hide();
         //$('.load2').show().html(globalVar + " posts has been posted");
          
+        
 
     }).ajaxStop(function(){
         //$('.load2').show().html(globalVar + " posts has been posted");
         //progressLabel.text( "Completed" );
         $('#wait2').hide();
         $('.result2').append("Completed");
-        globalVar = 0;
+        
     });
 
 //------------------------------------------------------------------------------------------------------------------------//
@@ -291,32 +254,6 @@ jQuery(document).ready(function ($) {
    
 
 
-//
-// var progressbar = $( "#progressbar" ), progressLabel = $( ".progress-label" );
-//        //Set ProgressBar
-//            function numberWithCommas(num) {
-//                    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-//            }
-//                     
-                     
-//                      progressbar.progressbar({
-//                              value: false,
-//                              change: function() {
-////                                      progressLabel.text( numberWithCommas(progressbar.progressbar( "value" )*130000 ));
-//                              progressLabel.text( numberWithCommas(progressbar.progressbar( "value" )+1 )+"%");
-//                              },
-//                              complete: function() {
-//                                      //progressLabel.text( "Completed" );
-//                              }
-//                            });
-//            function progress() {
-//                        var val = progressbar.progressbar( "value" ) || 0;
-//                        progressbar.progressbar( "value", val + 1 );
-//                        if ( val < 99 ) {
-//                                setTimeout( progress, 100 );
-//                        }
-//            }
-//                             setTimeout( progress, 3000 );
 
 
 

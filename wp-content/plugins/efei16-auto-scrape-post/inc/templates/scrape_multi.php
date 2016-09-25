@@ -26,6 +26,7 @@
             <input class="button-primary" type="submit" id="post_multi" name="post_multi" value="<?php esc_attr_e( 'Submit' ); ?>" />
 
         </form>
+         <br />
          <div class="result2"></div>
 <!--        <br />
         <div class="load2" style="float:left"></div>-->

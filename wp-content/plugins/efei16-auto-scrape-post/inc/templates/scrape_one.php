@@ -62,6 +62,7 @@
             <input class="button-primary" type="submit" id="post_one" name="post_one" value="<?php esc_attr_e( 'Submit' ); ?>" />
 
         </form>
+        <br />
          <div class="result1"></div>
         <div id="wait1"><img  src="<?php echo plugin_dir_url(__FILE__) . '../../images/waiting.gif'; ?>"></div>
        

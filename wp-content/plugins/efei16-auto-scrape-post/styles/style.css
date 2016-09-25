@@ -15,6 +15,7 @@
 .result, .result2 {
     color: blue;
     font-size: 15px;
+    
 }
 #wait1, #wait2 {
 	display:none;
