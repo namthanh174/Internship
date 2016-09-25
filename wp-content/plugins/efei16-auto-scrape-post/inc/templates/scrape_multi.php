@@ -1,11 +1,6 @@
 <?php
 
-$args = array("hide_empty" => 0,
-        "type" => "post",
-        "orderby" => "name",
-        "order" => "ASC"
-    );
-    $post_categories = get_categories($args);
+
     ?>
 
     <h2>Multiple Scrape</h2>
@@ -14,7 +9,7 @@ $args = array("hide_empty" => 0,
         <form action='' method='POST' id='scrape-multi-form'>
 
             <div><span><b>URL Category :</b></span> </div>
-            <input type="text" id="url" style="width:100%">
+            <input type="text" id="url_multi" style="width:100%">
 
             <div><span><b>Category :</b></span></div>
 
@@ -27,13 +22,20 @@ $args = array("hide_empty" => 0,
                 <?php } ?>
             </div>
 
-
-            <div><input type="submit" value="Submit" id="post_multi"></div>
+            <br />
+            <input class="button-primary" type="submit" id="post_multi" name="post_multi" value="<?php esc_attr_e( 'Submit' ); ?>" />
 
         </form>
-        <div id="wait"><img  src="<?php echo plugin_dir_url(__FILE__) . '../../images/waiting.gif'; ?>"></div>
-        <br />
-        <div class="load"></div>
+         <div class="result2"></div>
+<!--        <br />
+        <div class="load2" style="float:left"></div>-->
+        <div id="wait2"><img  src="<?php echo plugin_dir_url(__FILE__) . '../../images/waiting.gif'; ?>"></div>
+        
+        
+        <!--<div id="prog"></div>-->
+<!--	<div id="progressbar">
+              <div class="progress-label"></div>
+        </div>-->
 
     </div>
 

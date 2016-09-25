@@ -8,9 +8,15 @@ use Aws\Exception\MultipartUploadException;
 function upload_s3($urls) {
     //return $urls;
 
-    $key = "AKIAJ53K3XBUJTZANQ3Q";
-    $secret = "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";
-    $credentials = new Aws\Credentials\Credentials($key, $secret);
+    $key = trim(get_option('s3_key_id'));    
+    $secret = trim(get_option('s3_secret_key'));
+    $bucket_name = trim(get_option('s3_name'));
+    
+  
+    
+    
+    
+    $credentials = new Aws\Credentials\Credentials($key,$secret);
 
     $s3 = new Aws\S3\S3Client([
         'version' => 'latest',
@@ -18,41 +24,47 @@ function upload_s3($urls) {
         'credentials' => $credentials,
         'http' => [
             'verify' => false
-        ],
+        ]
     ]);
 
 
 
 
-    $urls = array_filter($urls);
+    $links = array_filter($urls);
 
     $s3_url = array();
 
 
-    foreach ($urls as $url) {
+    foreach ($links as $url) {
         $url = trim($url);
-
+        
         if ($url != "") {
             $raw_url = str_replace('%', '', $url);
         }
         if (strpos($url, '?')) {
             $raw_url = substr($url, 0, strpos($url, '?'));
         }
+        
         $filename = basename($raw_url);
         $link = $url;
 
 
         $uploader = new MultipartUploader($s3, $link, [
-            'bucket' => 'thanh.vo',
+            'bucket' => $bucket_name,
             'key' => $filename,
             'ACL' => 'public-read'
         ]);
-        try {
+        
+            try {
             $result = $uploader->upload();
             $s3_url[] = $result['ObjectURL'];
-        } catch (MultipartUploadException $e) {
-            echo $e->getMessage() . "\n";
-        }
+            } catch (MultipartUploadException $e) {
+               
+                echo json_encode(array("data"=>$e->getMessage()));exit();
+            }
+        
+       
     }
+    //echo json_encode(array("data"=>$s3_url));exit();
     return $s3_url;
 }

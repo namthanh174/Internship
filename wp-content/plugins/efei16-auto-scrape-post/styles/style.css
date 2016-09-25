@@ -1,17 +1,93 @@
 
 
-.load {
+/*.load1, .load2 {
 	
 	color: blue;
 	font-size: 20px;
 	padding-left: 40%;
+}*/
+
+.title_return {
+    color: blue;
+    font-size: 15px;
 }
 
-
-#wait {
+.result, .result2 {
+    color: blue;
+    font-size: 15px;
+}
+#wait1, #wait2 {
 	display:none;
 	width: 40%;
 	height: 40%;
 	padding-top: 0;
 	padding-left: 30%;
+}
+.title_scrape{
+/*   background: #45bbe6;
+   color: #fff;*/
+   /*border: 2px solid #fff;*/
+   /*padding: 2em 0;*/
+   font-weight: bold;
+  
+}
+
+.s3_setting{
+    width: 100%;
+}
+
+
+
+
+
+
+
+#progressbar{
+	margin-bottom:20px;
+}
+#progressyears {
+	float:left;	
+	font-weight:bold;
+	font-size:14px;
+	padding-top:5px;
+	width:20%;
+}
+.ui-progressbar {
+	position: relative;
+}
+.progress-label {
+	color:#000;
+	font-weight: bold;
+	left: 50%;
+	position: absolute;
+	top: 4px;
+}
+
+
+
+
+
+#progress-wrp {
+    border: 1px solid #0099CC;
+    padding: 1px;
+    position: relative;
+    border-radius: 3px;
+    margin: 10px;
+    text-align: left;
+    background: #fff;
+    box-shadow: inset 1px 3px 6px rgba(0, 0, 0, 0.12);
+}
+#progress-wrp .progress-bar{
+    height: 20px;
+    border-radius: 3px;
+    background-color: #f39ac7;
+    width: 0;
+    box-shadow: inset 1px 1px 10px rgba(0, 0, 0, 0.11);
+}
+#progress-wrp .status{
+    top:3px;
+    left:50%;
+    position:absolute;
+    display:inline-block;
+    color: #000000;
 }
