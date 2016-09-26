@@ -201,6 +201,78 @@ jQuery(document).ready(function ($) {
                 });
             }
     save_s3_setting_ajax();
+    
+    
+    
+    
+     function define_pattern_ajax() {
+           $('#define-pattern-form').submit( function () {
+               
+               var define_url = $('#define_url').val().trim();
+               var define_title = $('#define_title').val().trim();
+               var define_first_content = $('#define_first_content').val().trim();
+               var define_last_content = $('#define_last_content').val().trim();
+                
+            
+                
+                    
+                 $.ajax({
+            type: 'POST',
+            url: ajaxurl,
+            data : {
+                action: 'insert_scrape_pattern_table',
+                define_url: define_url,
+                define_title : define_title,
+                define_first_content: define_first_content,
+                define_last_content: define_last_content
+            },
+            
+            success: function(response){
+          
+                alert(response);
+            },
+            error: function(error){
+                alert('error');
+            }
+            
+            
+        });    
+                    
+                    
+                    
+                    
+                    return false;    
+                });
+            }
+    define_pattern_ajax();
+
+
+
+    get_title_pattern();
+    function get_title_pattern(){
+        $(".popup").hide();
+        $('#choose_title').click(function(e){
+            var url = $('#define_url').val();
+             e.preventDefault();
+            $("iframe").attr("src", url);
+            $(".links").fadeOut('slow');
+            $(".popup").fadeIn('slow');
+        });
+        
+         $(".close").click(function () {
+                $(this).parent().fadeOut("slow");
+                $(".links").fadeIn("slow");
+            });
+    }
+
+
+
+
+
+
+
+
+
 
 
 
