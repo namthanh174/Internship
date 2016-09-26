@@ -10,9 +10,47 @@
 
 
 
+
+
+
+/*
+ * ACTIVE PLUGIN
+ */
+
+function scrape_activate() {
+    add_option('upload_enable', '', '', 'yes');
+    
+    add_option('remove_link', '', '', 'yes');
+    add_option('s3_name', '', '', 'yes');
+    add_option('s3_key_id', '', '', 'yes');
+    add_option('s3_secret_key', '', '', 'yes');
+}
+
+register_activation_hook(__FILE__, 'scrape_activate');
+
+/*
+ * DEACTIVE PLUGIN
+ */
+
+function scrape_deactivate() {
+    delete_option('upload_enable', '', '', 'yes');
+    
+    delete_option('remove_link', '', '', 'yes');
+    delete_option('s3_name', '', '', 'yes');
+    delete_option('s3_key_id', '', '', 'yes');
+    delete_option('s3_secret_key', '', '', 'yes');
+}
+
+register_deactivation_hook(__FILE__, 'scrape_deactivate');
+
+
+
+
+
+
+
 if (is_admin()) {
-    add_action('admin_menu', 'scrape_admin_page');
-//  
+    add_action('admin_menu', 'scrape_admin_page'); 
     add_action('admin_init', 'scrape_settings');
     add_action('admin_init', 's3_settings');
 }
@@ -24,8 +62,8 @@ function scrape_admin_page() {
 }
 
 function scrape_settings() {
-    register_setting('scrape_options', 'aws_upload_enable');
-    register_setting('scrape_options', 'wp_upload_enable');
+    register_setting('scrape_options', 'upload_enable');
+    //register_setting('scrape_options', 'wp_upload_enable');
     register_setting('scrape_options', 'remove_link');
 }
 
@@ -56,13 +94,13 @@ function wp_scrape_single() {
     <?php require('inc/templates/scrape_one.php'); ?>
         </div>
         <div id="scrape_multi">
-            <?php require('inc/templates/scrape_multi.php'); ?>
+    <?php require('inc/templates/scrape_multi.php'); ?>
         </div>
         <div id="s3-setting">
-            <?php require('inc/templates/s3-setting.php'); ?>
+    <?php require('inc/templates/s3-setting.php'); ?>
         </div>
         <div id="settings">
-            <?php require('inc/templates/scrape_settings.php'); ?>
+    <?php require('inc/templates/scrape_settings.php'); ?>
         </div>
     </div>
 
@@ -189,7 +227,12 @@ function filter_content($page, $domain_url) {
     }
     if ($domain_url == 'marrybaby.vn') {
         $start = "<div class=\"article-details-content-details\">";
-        $end = "<div class=\"article-footer-block item-clear-float\">";
+        if(strpos($page,"section-box community-blog-section box-write-cms")){
+             $end = "<div class=\"section-box community-blog-section box-write-cms\">";
+        }else{
+             $end = "<div class=\"article-footer-block item-clear-float\">";
+        }
+       
     }
     if ($domain_url == 'tintucnongnghiep.com') {
         $start = "itemprop='description articleBody'>";
@@ -228,7 +271,7 @@ function scrape_post_one_article($url, $category_id, $domain_url) {
     if (get_option('remove_link') == "checked") {
         $post_content = remove_link_href($post_content);
     }
-    if (get_option('aws_upload_enable') == 'checked') {
+    if (get_option('upload_enable') == 'aws_upload_enable') {
         $list_s3 = upload_aws($list_img_link);
         $post_content = str_replace($list_img_link, $list_s3, $post_content);
     }
@@ -251,7 +294,7 @@ function scrape_post_one_article($url, $category_id, $domain_url) {
 
 
 
-        if (get_option('wp_upload_enable') == 'checked') {
+        if (get_option('upload_enable') == 'wp_upload_enable') {
             //Insert Images to WP Media
             $wp_attach_image_urls = upload_wp_media($list_img_link, $post_id);
 

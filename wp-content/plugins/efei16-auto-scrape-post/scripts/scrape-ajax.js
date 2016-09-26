@@ -138,7 +138,10 @@ jQuery(document).ready(function ($) {
             
             
 
-            }
+            },
+            done: function(){
+               
+            },
             
             
         });
@@ -158,7 +161,10 @@ jQuery(document).ready(function ($) {
         //$('.load2').show().html(globalVar + " posts has been posted");
         //progressLabel.text( "Completed" );
         $('#wait2').hide();
-        $('.result2').append("Completed");
+        if(globalVar > 0){
+              $('.result2').append("Completed");
+        }
+     
         
     });
 
