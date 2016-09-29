@@ -92,3 +92,33 @@
     display:inline-block;
     color: #000000;
 }
+
+
+
+
+
+
+.hovered,
+.hovered * {
+    cursor: pointer;
+    color: black;
+    background-color: #1cb1f2;
+}
+
+
+.popup_content{
+    width: 100%;
+    left: 10%;
+    top: 30%;
+    right: 10%;
+}
+
+
+
+.iframe{
+    height: 100%;
+    width: 100%;
+}
+
+
+
