@@ -27,79 +27,265 @@ jQuery(document).ready(function ($) {
                   var xmlString = response
                     , parser = new DOMParser()
                     , doc = parser.parseFromString(xmlString, "text/html");
-//                    for(var i = 0; i < doc.length; i++) {
-//                        if(doc[i].name.indexOf('title') == 0) {
-//                            data.push(doc[i]);
-//                        }
-//                    }
-//            data = doc.getElementsByTagName('h1')[0];
-//           
-//                                      console.log(data.innerText) 
+
                         var title=[];
                         var first_content = [];
                         var last_content = [];
-                        nodes = doc.getElementsByTagName('*');
+                       
+                        // var nodes = doc.body.getElementsByTagName('*');
+                        
+                        
+                        
 
-                    for(var i = 0; i < nodes.length; i++) {
-                        if(nodes[i].innerText == define_title){
-                            
-                            title = nodes[i];
-                        }
-                        if(nodes[i].innerText == define_first_content){
-                            
-                            var number = 1;
-                            num = 0;
-                            while(number >= 1){
-                            if(nodes[i-num].hasAttribute('class') && (nodes[i-num].className != "")){
-                                first_content = nodes[i-num];
-                                number = 0;
-                                console.log(number);
-                                
-                            }else{
-                                num++;
+                        
+                        // for(i=0;i<nodes.length;i++){
+                        //   console.log(nodes[i]);
+                        // }
+                        var array = []
+                        var allEls = [].slice.call(doc.body.querySelectorAll('*'));
+                        num  =0;
+                        allEls.forEach( function (el) {
+                              //do things with the element, e.g.
+                              // console.log(el.type)
+                              // console.log(el.id)
+
+                          if(el.children.length === 0 && el.textContent.replace(/ |\n/g,'') !== '') {
+                                 // Check the element has no children && that it is not empty
+                                 array.push(el);
+                                 console.log(num+" : "+el.outerHTML)
+                              }
+                              
+                              num++
+                        });
+
+                       
+
+
+
+                         // var array = [];
+
+                         
+                         // //element = nodes.childNodes;
+                         // console.log(nodes.length);
+                         //  for(var i = 0; i < nodes.length; i++) {
+                         //     var current = nodes[i];
+                         //      if(current.children.length === 0 && current.textContent.replace(/ |\n/g,'') !== '') {
+                         //         // Check the element has no children && that it is not empty
+                         //         array.push(current);
+                         //      }
+                              
+                         //  } 
+
+                         //  num= 1;
+                         //  for(var i = 0; i< array.length;i++){
+                         //      console.log(num+" : "+array[i].outerHTML)
+                         //                                  num++;
+                         //  }
+
+                          
+
+                          
+                          
+
+
+                        
+                      var patt_title = new RegExp(define_title);
+                      
+                      var patt_first =  new RegExp(define_first_content);
+                     
+
+                      var patt_last =  new RegExp(define_last_content);
+                      
+                     // var str = '';
+                     //console.log(nodes[1].innerText);
+                     // console.log(nodes[1].innerText.search(define_title));
+                     // for(var i =0;i<nodes.length;i++){
+                     //  console.log(nodes[i])
+                     //  if(i == 30)
+                     //    break;
+                     // }
+
+                      for(var i = 0; i < nodes.length; i++){
+                        //console.log(nodes[i].firstChild)
+                        if(nodes[i].firstChild.nodeValue){
+                          var match_title = patt_title.exec(nodes[i].firstChild.innerText);
+                          if(match_title == define_title){
+
+                         // console.log("title"+match_title)
+                              title = nodes[i].firstChild;
+                             console.log(title);
+                             break;
 
                             }
                         }
+                          
+
+                      }
+
+                      for(var i = 0; i < nodes.length; i++){
+                        if(nodes[i].firstChild != ""){
+                           var match_first = patt_first.exec(nodes[i].firstChild.innerText);
                         
                             
+                            if(match_first == define_first_content){
+                               //console.log(nodes[i])
+                              
+                               var number = 1;
+                                  num = 0;
+                                  while(number >= 1){     
+                                  if(nodes[i-num].firstChild.hasAttribute('id')){
+                                    first_content = nodes[i-num];
+
+                                    break;
+                                  }                         
+                                  if(nodes[i-num].firstChild.hasAttribute("class") && (nodes[i-num].firstChild.className != "")){
+                                      first_content = nodes[i-num].firstChild;
+                                      number = 0;
+                                      console.log(first_content);
+                                      break;
+                                        }else{
+                                            num++;
+
+                                        }
+                                    }
+                                      // console.log("match First " + match_first + "define first content" + define_first_content);
+                                      
+                              }
+                              //console.log('First Content : '+first_content);
+                              if(first_content != '')
+                                break;
                         }
-                        if(nodes[i].innerText == define_last_content){
-                           var number = 1;
+
+                        
+                      }
+
+                    for(var i = 0; i < nodes.length; i++){
+                      if(nodes[i].firstChild != ""){
+
+
+
+                      // console.log(i);
+                      //console.log(nodes[i]);
+                      
+                      //console.log(match_title);
+                     
+                      var match_last = patt_last.exec(nodes[i].firstChild.innerText);
+                      //var str = nodes[i].innerText;
+
+                     
+
+
+                      // console.log(str.search(define_title));
+                      // console.log(str.search(define_first_content));
+                      // console.log(str.search(define_last_content));
+                      // console.log(nodes[i]);
+                      
+
+
+                       
+                      if(match_last == define_last_content){
+                          //console.log(nodes[i]);
+                        var number = 1;
                             num = 0;
                             while(number >= 1){
-                            if(nodes[i+num].hasAttribute('class') && (nodes[i+num].className != "")){
-                                last_content = nodes[i+num];
+                            if(nodes[i+num].firstChild.hasAttribute("class") && (nodes[i+num].firstChild.className != "")){
+                                last_content = nodes[i+num].firstChild;
                                 number = 0;
+                                console.log(last_content);
+                                break;
                                 
-                                
-                            }else{
-                                num++;
+                                  }else{
+                                      num++;
 
-                            }
+                                  }
+                                }
+                                // console.log("match Last " + match_last);
+                                //  console.log('Last Content : '+last_content);
+
+
+                               
                         }
+                      }
 
-                }
-            }
+
+                      if(last_content != '')
+                        break;
+
+
+                    }
+                      
+
+                      
+                       
+                    
+
+                        
+
+
+            //             if(nodes[i].innerText == define_title){
+                            
+            //                 title = nodes[i];
+            //             }
+            //             if(nodes[i].innerText == define_first_content){
+                            
+            //                 var number = 1;
+            //                 num = 0;
+            //                 while(number >= 1){                              
+            //                 if(nodes[i-num].hasAttribute('class') && (nodes[i-num].className != "")){
+            //                     first_content = nodes[i-num];
+            //                     number = 0;
+            //                     console.log(number);
+                                
+            //                 }else{
+            //                     num++;
+
+            //                 }
+            //             }
+                        
+                            
+            //             }
+            //             if(nodes[i].innerText == define_last_content){
+            //                var number = 1;
+            //                 num = 0;
+            //                 while(number >= 1){
+            //                 if(nodes[i+num].hasAttribute('class') && (nodes[i+num].className != "")){
+            //                     last_content = nodes[i+num];
+            //                     number = 0;
+                                
+                                
+            //                       }else{
+            //                           num++;
+
+            //                       }
+            //                     }
+
+            //             }
+
+
+
+
+
+            // }
                 
 //                if(title.hasAttribute('id')){
 //                     console.log(title.id);
 //                }      
-                console.log(title.nodeName);
-                if(title.hasAttribute('class')){
-                     console.log(title.className);
-                }
+                // console.log(title.nodeName);
+                // if(title.hasAttribute('class')){
+                //      console.log(title.className);
+                // }
                 
                 
-                console.log(first_content.nodeName);
-                if(first_content.hasAttribute('class')){
-                     console.log(first_content.className);
-                }
+                // console.log(first_content.nodeName);
+                // if(first_content.hasAttribute('class')){
+                //      console.log(first_content.className);
+                // }
                 
                 
-                console.log(last_content.nodeName);
-                if(last_content.hasAttribute('class')){
-                     console.log(last_content.className);
-                }
+                // console.log(last_content.nodeName);
+                // if(last_content.hasAttribute('class')){
+                //      console.log(last_content.className);
+                // }
                
                
 

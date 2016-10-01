@@ -90,10 +90,7 @@ function insert_scrape_pattern_table($url, $title, $first_content, $last_content
         
     }
 
-       // $url = "http://www.vnexpress.net/news";
-//        $title = "Div.hehe";
-//        $first_content = "Div.first_content";
-//        $last_content = "H1.last_content";
+ 
 
 
     $table_name = $wpdb->prefix . 'scrape_pattern';
@@ -293,10 +290,45 @@ function scrape_process_content($url, $category_id, $content) {
 }
 
 function check_supported_url($url) {
-    $supported_url = array('techcrunch.com', 'marrybaby.vn', 'tintucnongnghiep.com');
-    if (in_array($url, $supported_url))
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'scrape_pattern';
+    // $query =  $wpdb->prepare("SELECT * FROM `wp_scrape_pattern` WHERE url ='"+$url+"'");
+    // if($wpdb->query($query) == true){
+    //     return true;
+    // }
+
+    //$sql = "SELECT * FROM {$wpdb->prefix}scrape_pattern WHERE url ='techcrunch.com'";
+
+    // $sql = $wpdb->prepare( "SELECT url FROM %s",$table_name );
+    // $results = $wpdb->get_results( $sql , ARRAY_A );
+    // if($results == $url){
+    //       return true;
+    // }
+    // $key =  'techcrunch.com';
+    // $result = $wpdb->get_var( $wpdb->prepare( 
+    //             "
+    //                 SELECT sum(url) 
+    //                 FROM $wpdb->wp_scrape_pattern 
+    //                 WHERE url = %s
+    //             ", 
+    //             $key
+    //         ) );
+    // if($result != ''){
+    //     return true;
+    // }
+
+    $query = $wpdb->prepare("SELECT count(url) FROM `".$table_name."` WHERE url ='".$url."'");
+    $result = $wpdb->get_var($query);
+    if($result > 0)
         return true;
-    return false;
+    return false; 
+    
+
+
+    // $supported_url = array('techcrunch.com', 'marrybaby.vn', 'tintucnongnghiep.com');
+    // if (in_array($url, $supported_url))
+       
+    
 }
 
 function scrape($url) {
@@ -314,25 +346,56 @@ function fetchdata($data, $start, $end) {
 }
 
 function filter_content($page, $domain_url) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'scrape_pattern';
+    $query = $wpdb->prepare("SELECT * FROM `".$table_name."` WHERE url ='".$domain_url."'");
+    $result = $wpdb->get_row($query,ARRAY_A);
 
-    if ($domain_url == 'techcrunch.com') {
+    $first_pattern = $result['first_content'];   
+    preg_match('/(?P<name>\w+).(?P<class>(.*))/', $first_pattern, $first_pattern_matches);
+    $first_pattern_tagName =  strtolower($first_pattern_matches['name']);
+    $first_pattern_className = strtolower($first_pattern_matches['class']);
 
-        $start = "<div class=\"article-entry text\">";
-        $end = "<div id=\"social-after-wrapper\"";
-        //return $page;
-    }
-    if ($domain_url == 'marrybaby.vn') {
-        $start = "<div class=\"article-details-content-details\">";
-        if (strpos($page, "section-box community-blog-section box-write-cms")) {
-            $end = "<div class=\"section-box community-blog-section box-write-cms\">";
-        } else {
-            $end = "<div class=\"article-footer-block item-clear-float\">";
-        }
-    }
-    if ($domain_url == 'tintucnongnghiep.com') {
-        $start = "itemprop='description articleBody'>";
-        $end = "<center>";
-    }
+    $start = "<".$first_pattern_tagName." class=\"".$first_pattern_className."\">";
+    //echo $start;exit();
+
+    $last_pattern = $result['last_content'];    
+    preg_match('/(?P<name>\w+).(?P<class>(.*))/', $last_pattern, $last_pattern_matches);
+    $last_pattern_tagName =  strtolower($last_pattern_matches['name']);
+    $last_pattern_className = strtolower($last_pattern_matches['class']);   
+
+    
+    //$end = "<".$last_pattern_tagName." class=\"".$last_pattern_className."\">";
+    $end ="class=\"".$last_pattern_className."\"";
+    //echo $end;exit();
+
+
+
+    
+
+
+
+
+
+
+    // if ($domain_url == 'techcrunch.com') {
+
+    //     $start = "<div class=\"article-entry text\">";
+    //     $end = "<div id=\"social-after-wrapper\"";
+    //     //return $page;
+    // }
+    // if ($domain_url == 'marrybaby.vn') {
+    //     $start = "<div class=\"article-details-content-details\">";
+    //     if (strpos($page, "section-box community-blog-section box-write-cms")) {
+    //         $end = "<div class=\"section-box community-blog-section box-write-cms\">";
+    //     } else {
+    //         $end = "<div class=\"article-footer-block item-clear-float\">";
+    //     }
+    // }
+    // if ($domain_url == 'tintucnongnghiep.com') {
+    //     $start = "itemprop='description articleBody'>";
+    //     $end = "<center>";
+    // }
     $content = fetchdata($page, $start, $end);
 
     return $content;
