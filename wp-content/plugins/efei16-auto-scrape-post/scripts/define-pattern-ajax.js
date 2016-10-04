@@ -28,271 +28,339 @@ jQuery(document).ready(function ($) {
                     , parser = new DOMParser()
                     , doc = parser.parseFromString(xmlString, "text/html");
 
-                        var title=[];
-                        var first_content = [];
-                        var last_content = [];
-                       
-                        // var nodes = doc.body.getElementsByTagName('*');
-                        
-                        
-                        
 
-                        
-                        // for(i=0;i<nodes.length;i++){
-                        //   console.log(nodes[i]);
-                        // }
-                        var array = []
-                        var allEls = [].slice.call(doc.body.querySelectorAll('*'));
-                        num  =0;
-                        allEls.forEach( function (el) {
-                              //do things with the element, e.g.
-                              // console.log(el.type)
-                              // console.log(el.id)
 
-                          if(el.children.length === 0 && el.textContent.replace(/ |\n/g,'') !== '') {
-                                 // Check the element has no children && that it is not empty
-                                 array.push(el);
-                                 console.log(num+" : "+el.outerHTML)
+                        var title = false;                        
+                        var contentDOM = false;
+                        //var nodes = doc.body.getElementsByTagName('*');
+                        var nodes = doc.body.querySelectorAll('*');
+
+                        var text = false;
+                        define_title = escape(define_title.toLowerCase());
+                        define_first_content = escape(define_first_content.toLowerCase());
+                        define_last_content  = escape(define_last_content.toLowerCase());
+
+
+
+
+
+
+
+
+                        for(var i= (nodes.length-1);i >= 0; i--){
+                          //nodeText = nodes[i].innerHTML;
+                          //text = nodeText.replace(/(<([^>]+)>)/ig, '');
+                          text = removeTag(nodes[i].innerHTML)
+                          text = escape(text.toLowerCase());
+                          if(nodes[i].nodeName == 'H1' || nodes[i].nodeName == 'H2' ||nodes[i].nodeName == 'H3'){
+                            if(text.search(define_title) != -1){
+                              title = nodes[i];
+                              break;
+                            }
+                          }
+                        }
+
+
+                        for(var i = (nodes.length-1);i >= 0;i--){
+
+
+                          if(nodes[i].nodeName == "SCRIPT"){
+                            continue;
+                          }
+                         text = removeTag(nodes[i].innerHTML);
+                          //nodeText = nodes[i].innerHTML;
+                          //text = text.replace(/(<([^>]+)>)/ig, '');
+                          text = escape(text.toLowerCase());
+                          //console.log(i +" : "+ text);
+                          
+                          if ((text.search(define_first_content) != -1) && (text.search(define_last_content) != -1)) {                            
+                            nodeTemp = nodes[i]; 
+                            var num = 1;                          
+                            while(true){
+                              if(nodeTemp.hasAttribute('class') && (nodeTemp.className != "")){
+                               contentDOM = nodeTemp;
+                               break;
+                              }else{
+                                nodeTemp = nodeTemp.parentElement;
+
                               }
+                            }
+                    
+                            break;
+                          }
+
+                        }
+                        
+
+
+
+                        
+                        // var img = get_img(contentDOM.outerHTML);
+                        // // console.log(img);
+                        // // console.log(title)
+                        // $.ajax({
+                        //   type:'POST',
+                        //   url: ajaxurl,
+                        //   dataType: 'json',
+                        //   data:{
+                        //       action: 'scrape_content_pattern_ajax_demo',
+                        //       content: contentDOM.outerHTML,
+                        //       title : title.innerText,
+                        //       define_url : define_url,
+                        //       img : img
+                        //   },
+                        //   success:function(data){
+                        //     alert("Post success!")
+                        //     console.log(data.img);
+                           
+                        //   }
+                        // });
+
+
+
+
+
+
+
+
+
+
+                        
+
+                        
+                      //   // for(i=0;i<nodes.length;i++){
+                      //   //   console.log(nodes[i]);
+                      //   // }
+                      //   var nodes = []
+                      //   var allElements = [].slice.call(doc.body.querySelectorAll('*'));
+                      //   num  =0;
+                      //   allElements.forEach( function (el) {
+                      //         //do things with the element, e.g.
+                      //         // console.log(el.type)
+                      //         // console.log(el.id)
+                      //         if(el.nodeName === "SCRIPT"){
+                      //           return;
+                      //         }
+
+                      //     //if(el.children.length === 0 && el.textContent.replace(/ |\n/g,'') !== '') {
+                      //            // Check the element has no children && that it is not empty
+                      //            nodes.push(el);
+                      //            //console.log(num+" : "+el.outerHTML)
+                      //       //}
                               
-                              num++
-                        });
+                      //         num++
+                      //   });
+
 
                        
+                      //  for(var i=0;i<nodes.length;i++){
+                      //    //console.log(i+" : " + "NodeName : " + nodes[i].nodeName + " Value: " +nodes[i].outerHTML );
+
+
+                      //  }
 
 
 
-                         // var array = [];
+                      // patt_title = new RegExp(define_title);
+                      // patt_first_content = new RegExp(define_first_content);
+                      // patt_last_content = new RegExp(define_last_content);
+                      // //var regex = /(<([^>]+)>)/ig;
+                      // for(var i=nodes.length-1;i >= 0;i--){
+                      //   var nodeText = nodes[i].innerText;
+                      //   nodeText = nodeText.replace(/(<([^>]+)>)/ig, ' ');
+                      //   nodeText = nodeText.replace(/&nbsp;/g, ' ');
+                      //   // nodeText = jQuery(nodes[i]).text();
+
+                      //   if(patt_title.test(nodeText)){
+                         
+                      //    title = nodes[i].parentElement;
+
+                      //   }
+                        
+
+
+                      //   // if(patt_last_content.test(nodeText)){
+                      //   //   console.log(i+" : " + nodes[i].parentNode.innerHTML);
+                      //   //  var number = 1;
+                      //   //          num = 0;
+                      //   //   // while(number >= 1){ 
+
+                      //   //   //           if(nodes[i].parentElement.hasAttribute('class') && nodes[i].parentElement.className != ""){
+                      //   //   //             first_content = nodes[i].parentElement;
+                      //   //   //             number = 0;
+                      //   //   //             console.log(first_content);
+                      //   //   //             break;
+                                    
+                      //   //   //         }else{
+                      //   //   //             num++;
+
+                      //   //   //         }
+                      //   //   //       }
+                      //   // }
+                      //   if(patt_last_content.test(nodeText)){
+                      //     last_content = nodes[i].parentElement;
+                      //     //console.log(nodes[i]);
+                      //     // var number = 1;
+                      //     //        num = 0;
+                      //     // while(number >= 1){                                                             
+                      //     //           if(nodes[i].parentElement.hasAttribute('class') && nodes[i].parentElement.className != ""){
+                      //     //             last_content = nodes[i].parentElement;
+                      //     //             number = 0;
+                      //     //             console.log(last_content);
+                      //     //             break;
+                                    
+                      //     //         }else{
+                      //     //             num++;
+
+                      //     //         }
+                      //     //       }
+                      //   }
+
+
+
+
+
+
+
+
+
+
+                      // }
+                          
+
+                          
+                          
+
+
+                        
+                    //   var patt_title = new RegExp(define_title);
+                      
+                    //    var patt_first =  new RegExp(define_first_content);
+                    //   //alert(patt_first)
+
+                    //   var patt_last =  new RegExp(define_last_content);
+
+                    //   // var regex = /(<([^>]+)>)/ig;
+          
+                    //   alert(patt_first)
+                     
+
+                    //   for(var i=0;i<nodes.length;i++){
+                        
+                    //     var textNode = nodes[i].innerHTML;
+                    //     textNode = textNode.replace(/<.*?>/g, ' ');
+                    //     textNode = textNode.replace(/&nbsp;/g, ' ');
+
+                    //     // textNode = jQuery(nodes[i]).text();
+                    //     //console.log(i + " : " +textNode);
+                    //     // var match_title = patt_title.exec(textNode);
+                    //     // var match_first = patt_first.exec(textNode);
+
+                    //     //  var match_last = patt_last.exec(textNode);
+                          
+                          
+                    // // if(nodes[i].children.length === 0 && nodes[i].textContent.replace(/ |\n/g,'') !== '') {
+                    //      //console.log(i +" : "+nodes[i].innerText + " className : " + nodes[i].className);
+
+                    //  if(patt_title.test(textNode)){
+                    //           title = nodes[i];
+                    //           //console.log(title)
+                    //          }
+                         
+                         
+                        
+                        
+                    //     if(patt_first.test(textNode)){
+                          
+                    //         lert(match_first);
+                    //         var number = 1;
+                    //               num = 0;
+                    //               while(number >= 1){                                                             
+                    //               if(nodes[i-num].hasAttribute("class") && (nodes[i-num].className != "")){
+                    //                   first_content = nodes[i-num];
+                    //                   number = 0;
+                    //                   console.log(first_content);
+                    //                   break;
+                    //                     }else{
+                    //                         num++;
+
+                    //                     }
+                    //                 }
+                    //       }
+                             
+                                   
+                         
+                         
+                         
+                        
+                    //       if(patt_last.test(textNode)){
+                    //        var number = 1;
+                    //         num = 0;
+                    //         while(number >= 1){
+                    //         if(nodes[i+num].hasAttribute("class") && (nodes[i+num].className != "")){
+                    //             last_content = nodes[i+num];
+                    //             number = 0;
+                    //             console.log(last_content);
+                    //             break;
+                                
+                    //               }else{
+                    //                   num++;
+
+                    //               }
+                    //             }
+                            
+                                
+
+                    //      }
+
+
+
+
+                         // if(patt_last.test(textNode)){
+                         //  console.log(nodes[i].parentElement)
+                         //   var number = 1;
+                         //    num = 0;
+                         //    while(number >= 1){
+                         //    if(nodes[i+num].hasAttribute("class") && (nodes[i+num].className != "")){
+                         //        last_content = nodes[i+num];
+                         //        number = 0;
+                         //        //console.log(last_content);
+                         //        break;
+                                
+                         //          }else{
+                         //              num++;
+
+                         //          }
+                         //        }
+                            
+                                
+
+                         // }
+                         
+
+                        // }  
 
                          
-                         // //element = nodes.childNodes;
-                         // console.log(nodes.length);
-                         //  for(var i = 0; i < nodes.length; i++) {
-                         //     var current = nodes[i];
-                         //      if(current.children.length === 0 && current.textContent.replace(/ |\n/g,'') !== '') {
-                         //         // Check the element has no children && that it is not empty
-                         //         array.push(current);
-                         //      }
-                              
-                         //  } 
 
-                         //  num= 1;
-                         //  for(var i = 0; i< array.length;i++){
-                         //      console.log(num+" : "+array[i].outerHTML)
-                         //                                  num++;
-                         //  }
-
-                          
-
-                          
-                          
+                      // }
 
 
-                        
-                      var patt_title = new RegExp(define_title);
+
                       
-                      var patt_first =  new RegExp(define_first_content);
-                     
 
-                      var patt_last =  new RegExp(define_last_content);
+
+
+
+
                       
-                     // var str = '';
-                     //console.log(nodes[1].innerText);
-                     // console.log(nodes[1].innerText.search(define_title));
-                     // for(var i =0;i<nodes.length;i++){
-                     //  console.log(nodes[i])
-                     //  if(i == 30)
-                     //    break;
-                     // }
-
-                      for(var i = 0; i < nodes.length; i++){
-                        //console.log(nodes[i].firstChild)
-                        if(nodes[i].firstChild.nodeValue){
-                          var match_title = patt_title.exec(nodes[i].firstChild.innerText);
-                          if(match_title == define_title){
-
-                         // console.log("title"+match_title)
-                              title = nodes[i].firstChild;
-                             console.log(title);
-                             break;
-
-                            }
-                        }
-                          
-
-                      }
-
-                      for(var i = 0; i < nodes.length; i++){
-                        if(nodes[i].firstChild != ""){
-                           var match_first = patt_first.exec(nodes[i].firstChild.innerText);
-                        
-                            
-                            if(match_first == define_first_content){
-                               //console.log(nodes[i])
-                              
-                               var number = 1;
-                                  num = 0;
-                                  while(number >= 1){     
-                                  if(nodes[i-num].firstChild.hasAttribute('id')){
-                                    first_content = nodes[i-num];
-
-                                    break;
-                                  }                         
-                                  if(nodes[i-num].firstChild.hasAttribute("class") && (nodes[i-num].firstChild.className != "")){
-                                      first_content = nodes[i-num].firstChild;
-                                      number = 0;
-                                      console.log(first_content);
-                                      break;
-                                        }else{
-                                            num++;
-
-                                        }
-                                    }
-                                      // console.log("match First " + match_first + "define first content" + define_first_content);
-                                      
-                              }
-                              //console.log('First Content : '+first_content);
-                              if(first_content != '')
-                                break;
-                        }
-
-                        
-                      }
-
-                    for(var i = 0; i < nodes.length; i++){
-                      if(nodes[i].firstChild != ""){
-
-
-
-                      // console.log(i);
-                      //console.log(nodes[i]);
-                      
-                      //console.log(match_title);
-                     
-                      var match_last = patt_last.exec(nodes[i].firstChild.innerText);
-                      //var str = nodes[i].innerText;
 
                      
-
-
-                      // console.log(str.search(define_title));
-                      // console.log(str.search(define_first_content));
-                      // console.log(str.search(define_last_content));
-                      // console.log(nodes[i]);
-                      
-
-
-                       
-                      if(match_last == define_last_content){
-                          //console.log(nodes[i]);
-                        var number = 1;
-                            num = 0;
-                            while(number >= 1){
-                            if(nodes[i+num].firstChild.hasAttribute("class") && (nodes[i+num].firstChild.className != "")){
-                                last_content = nodes[i+num].firstChild;
-                                number = 0;
-                                console.log(last_content);
-                                break;
-                                
-                                  }else{
-                                      num++;
-
-                                  }
-                                }
-                                // console.log("match Last " + match_last);
-                                //  console.log('Last Content : '+last_content);
-
-
-                               
-                        }
-                      }
-
-
-                      if(last_content != '')
-                        break;
-
-
-                    }
-                      
-
-                      
-                       
-                    
-
-                        
-
-
-            //             if(nodes[i].innerText == define_title){
-                            
-            //                 title = nodes[i];
-            //             }
-            //             if(nodes[i].innerText == define_first_content){
-                            
-            //                 var number = 1;
-            //                 num = 0;
-            //                 while(number >= 1){                              
-            //                 if(nodes[i-num].hasAttribute('class') && (nodes[i-num].className != "")){
-            //                     first_content = nodes[i-num];
-            //                     number = 0;
-            //                     console.log(number);
-                                
-            //                 }else{
-            //                     num++;
-
-            //                 }
-            //             }
-                        
-                            
-            //             }
-            //             if(nodes[i].innerText == define_last_content){
-            //                var number = 1;
-            //                 num = 0;
-            //                 while(number >= 1){
-            //                 if(nodes[i+num].hasAttribute('class') && (nodes[i+num].className != "")){
-            //                     last_content = nodes[i+num];
-            //                     number = 0;
-                                
-                                
-            //                       }else{
-            //                           num++;
-
-            //                       }
-            //                     }
-
-            //             }
-
-
-
-
-
-            // }
-                
-//                if(title.hasAttribute('id')){
-//                     console.log(title.id);
-//                }      
-                // console.log(title.nodeName);
-                // if(title.hasAttribute('class')){
-                //      console.log(title.className);
-                // }
-                
-                
-                // console.log(first_content.nodeName);
-                // if(first_content.hasAttribute('class')){
-                //      console.log(first_content.className);
-                // }
-                
-                
-                // console.log(last_content.nodeName);
-                // if(last_content.hasAttribute('class')){
-                //      console.log(last_content.className);
-                // }
                
                
 
                define_title = title.nodeName+"."+title.className;
-               define_first_content = first_content.nodeName+"."+first_content.className;
-               define_last_content = last_content.nodeName+"."+last_content.className;
-               alert(define_url);
+               define_contentDOM = contentDOM.nodeName+"."+contentDOM.className;
+               
                  $.ajax({
                         type: 'POST',
                         url: ajaxurl,
@@ -300,8 +368,7 @@ jQuery(document).ready(function ($) {
                             action: 'insert_scrape_pattern_table',
                             define_url: define_url,
                             define_title: define_title,
-                            define_first_content: define_first_content,
-                            define_last_content: define_last_content
+                            define_content:  define_contentDOM
                         },
                         success: function (response) {
 
@@ -332,56 +399,6 @@ jQuery(document).ready(function ($) {
 
 
 
-//get_pattern();
-//function get_pattern(){
-//    
-//    window.url_content = '';
-//    //Get title from page to set pattern
-//    $('#choose_title').click(function(e){
-//         $('.title_popup').empty();
-//         $('.first_content_popup').empty();
-//         $('.last_content_popup').empty();
-//         var title,pattern_title;
-//          //alert(url_content)
-//           
-//                 var url = $('#define_url').val();
-//                var data = {
-//                    action: 'scrape_content_pattern_ajax',
-//                    url: url
-//                }
-//                $.get(ajaxurl, data, function (response) {
-//                    var content = response;
-//                    url_content = content;
-//                     var last, bgc;
-//                
-//                var myscript = $('.mousehover').mouseover(function (e) {
-//                var elem = e.target;
-//                if (last != elem) {
-//                    if (last != null) {
-//                        last.classList.remove("hovered");
-//                    }
-//
-//                    last = elem;
-//                    elem.classList.add("hovered");
-//                }
-//
-//            }).click(function (e) {
-//                 e.target.classList.remove('hovered');
-//                 title = e.target.outerText;
-//                 pattern_title = e.target.offsetParent.nodeName+'.'+e.target.offsetParent.className;
-//                 $('#define_title').val(title);
-//                 
-//            });
-//             $('#iframe').contents().find('body').append('<script>'+myscript+'</script>');   
-//              
-//            });
-//            
-//            
-//            //e.preventDefault();
-//            
-//           
-//    });
-//    }
 
 
 
@@ -393,234 +410,6 @@ jQuery(document).ready(function ($) {
 
 
 
-
-//get_pattern_demo_2();
-//function get_pattern_demo_2(){
-//    
-//    window.url_content = '';
-//    //Get title from page to set pattern
-//    $('#choose_title').click(function(e){
-//         $('.title_popup').empty();
-//         $('.first_content_popup').empty();
-//         $('.last_content_popup').empty();
-//         var title,pattern_title;
-//          //alert(url_content)
-//            if(url_content == ''){
-//                 var url = $('#define_url').val();
-//            var data = {
-//                action: 'scrape_content_pattern_ajax',
-//                url: url
-//            }
-//                $.post(ajaxurl, data, function (response) {
-//                    var data = response; 
-//                    url_content = response;
-//                $('.title_popup').append(data);
-//                
-//              
-//            });
-//            }else{
-//                $('.title_popup').append(url_content);
-//            }
-//            
-//            //e.preventDefault();
-//            var myclass = '';
-//            var last, bgc;
-//            $('.title_popup').mouseover(function (e) {
-//                var elem = e.target;
-//                if (last != elem) {
-//                    if (last != null) {
-//                        last.classList.remove("hovered");
-//                    }
-//
-//                    last = elem;
-//                    elem.classList.add("hovered");
-//                }
-//
-//                myclass = elem.className;
-//
-//
-//            }).click(function (e) {
-//                 e.target.classList.remove('hovered');
-//                 title = e.target.outerText;
-//                 pattern_title = e.target.offsetParent.nodeName+'.'+e.target.offsetParent.className;
-//                 $('#define_title').val(title);
-//                 
-//            });
-//           
-//    });
-//    
-//    //Get first content from page to set pattern
-//     $('#choose_first_content').click(function(e){
-//          $('.title_popup').empty();
-//         $('.first_content_popup').empty();
-//         $('.last_content_popup').empty();
-//           var first_content,pattern_first_content;
-//         
-//            
-//            if(url_content == ''){
-//                 var url = $('#define_url').val();
-//            var data = {
-//                action: 'scrape_content_pattern_ajax',
-//                url: url
-//            }
-//                $.post(ajaxurl, data, function (response) {
-//                    url_content = response;
-//                $('.first_content_popup').html(response);
-//                
-//            });
-//            }else{
-//                $('.first_content_popup').append(url_content);
-//            }
-//            
-//            
-//            //e.preventDefault();
-//            var myclass = '';
-//            var last1, bgc1;
-//            $('.first_content_popup').mouseover(function (e) {
-//                var elem1 = e.target;
-//                if (last1 != elem1) {
-//                    if (last1 != null) {
-//                        last1.classList.remove("hovered");
-//                    }
-//
-//                    last1 = elem1;
-//                    elem1.classList.add("hovered");
-//                }
-//
-//                myclass = elem1.className;
-//
-//
-//            }).click(function (e) {                  
-//                e.target.classList.remove('hovered');
-//                 first_content = e.target.outerText;
-//                 pattern_first_content = e.target.offsetParent.nodeName+'.'+e.target.offsetParent.className;
-//                 $('#define_first_content').val(first_content);
-//               
-//            });
-//            
-//    });
-//    
-//    
-//    //Get last content from page to set pattern
-//     $('#choose_last_content').click(function(e){
-//         $('.title_popup').empty();
-//         $('.first_content_popup').empty();
-//         $('.last_content_popup').empty();
-//          var last_content,pattern_last_content;
-//            
-//            if(url_content == ''){
-//                 var url = $('#define_url').val();
-//                var data = {
-//                    action: 'scrape_content_pattern_ajax',
-//                    url: url
-//                }
-//                $.post(ajaxurl, data, function (response) {
-//                    url_content = response;
-//               $('.last_content_popup').append(response);
-//                
-//            });
-//            }else{
-//                $('.last_content_popup').html(url_content);
-//            }
-//            
-//            
-//            //e.preventDefault();
-//            var myclass = '';
-//            var last2, bgc2;
-//            $('.last_content_popup').mouseover(function (e) {
-//                var elem2 = e.target;
-//                if (last2 != elem2) {
-//                    if (last2 != null) {
-//                        last2.classList.remove("hovered");
-//                    }
-//
-//                    last2 = elem2;
-//                    elem2.classList.add("hovered");
-//                }
-//
-//                myclass = elem2.className;
-//
-//
-//            }).click(function (e) {               
-//                e.target.classList.remove('hovered');
-//                 last_content = e.target.outerText;
-//                 pattern_last_content = e.target.offsetParent.nodeName+'.'+e.target.offsetParent.className;
-//                 $('#define_last_content').val(last_content);
-//                 
-//            });
-//            
-//    });
-//     
-//}
-
-
-
-
-
-
-
-
-
-
-
-//        function get_pattern_demo(e,id){
-//
-//                    var content,pattern;
-//             //var url = $('#define_url').val();
-//                    var url = "http://www.marrybaby.vn/tin-tuc/su-phuc-hoi-ki-dieu-cua-cau-be-viem-da-co-dia-nho-nuoc-khoang-avene-thien-nhien";
-//
-//                    var data = {
-//                        action: 'scrape_process_multi_ajax',
-//                        url: url
-//                    }
-//                    $.get(ajaxurl, data, function (response) {
-//                        $('.popup_content').append(response);
-//                    });
-//                    e.preventDefault();
-//        //            $("iframe").attr("src", url);
-//        //            $(".links").fadeOut('slow');
-//        //            $(".popup").fadeIn('slow');
-//
-//                    var myclass = '';
-//                    var last, bgc;
-//                    $('.popup_content').mouseover(function (e) {
-//                        var elem = e.target;
-//                        if (last != elem) {
-//                            if (last != null) {
-//                                last.classList.remove("hovered");
-//                            }
-//
-//                            last = elem;
-//                            elem.classList.add("hovered");
-//                        }
-//
-//                        myclass = elem.className;
-//
-//
-//                    }).click(function (e) {
-//        //                $('#define_title').val(e.target.offsetParent.nodeName+'.'+e.target.offsetParent.className);
-//        //                alert($('#define_title').val());
-//                        console.log(e);
-//        //                   alert(e.target.outerText);                    
-//                        e.target.classList.remove('hovered');
-//        //                    $('#demoResult').html(e.target.outerHTML);
-//                        //alert(e.target.parentNode.className);
-//        //                    e.target.classList.remove('hovered');
-//        //                    console.log(e.target.className)
-//        //                   alert(e.target.parentElement.outerHTML);
-//                           //$('#demoResult').html(e.target.parentElement.outerHTML);
-//
-//                         content = e.target.outerHTML;
-//                         contentText = e.target.outerText;
-//                         pattern = e.target.offsetParent.nodeName+'.'+e.target.offsetParent.className;
-//                         $(id).val(contentText);
-//                         //return content;
-//                    });
-//
-//                    //return [content,pattern];
-//
-//
-//        }
 
 
 
@@ -633,22 +422,6 @@ jQuery(document).ready(function ($) {
 
 
 
-function get_element(){
-     //alert(response)
-                   alert('aa3')
-                  //$('#demoResult').html(response);
-                  alert('aa3')
-                  var myelement = '';
-                  alert('aa2')
-                    var all = document.getElementsByTagName("*");
-                        alert('aa1')
-                        for (var i=0, max=all.length; i < max; i++) {
-                             // Do something with the element here
-                             if(all[i].innerText == "Exploits patched by Apple today hint at years of surreptitious government hacks"){
-                                 myelement.push(all[i]);
-                             }
-                        }
 
-                        alert(myelement.nodeName)
-                        alert('aa')
-}
+
+

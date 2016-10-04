@@ -1,6 +1,6 @@
 <?php
 /*
-  Plugin Name:EFEI-16 Auto Scrape And Post
+  Plugin Name:E-Scraper
   Plugin URI: http://www.efe.com.vn/thanh_vo
   Description: Plugin for setting pages where admin can insert SharpSpring tracking code into a specific text field.
   Author: Thanh Vo
@@ -44,10 +44,10 @@ function scrape_pattern_table() {
     $sql = "CREATE TABLE $table_name (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
 		time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-		title varchar(255) NOT NULL,
-                first_content text NOT NULL,
-                last_content text NOT NULL,		
-		url varchar(55) DEFAULT '' NOT NULL,
+		define_title varchar(255) NOT NULL,
+                define_content text NOT NULL,
+                define_category text,		
+		define_url varchar(55) DEFAULT '' NOT NULL,
 		PRIMARY KEY  (id)
 	) $charset_collate;";
 
@@ -82,10 +82,10 @@ function insert_scrape_pattern_table($url, $title, $first_content, $last_content
     global $wpdb;
 
     if (isset($_POST['define_url'])) {
-        $url = $_POST['define_url'];
-        $title = $_POST['define_title'];
-        $first_content = $_POST['define_first_content'];
-        $last_content = $_POST['define_last_content'];
+        $define_url = $_POST['define_url'];
+        $define_title = $_POST['define_title'];
+        $define_content = $_POST['define_content'];
+        
         //echo $last_content;exit();
         
     }
@@ -98,16 +98,16 @@ function insert_scrape_pattern_table($url, $title, $first_content, $last_content
     if ($wpdb->insert(
                 $table_name, array(
                 'time' => current_time('mysql'),
-                'title' => $title,
-                'first_content' => $first_content,
-                'last_content' => $last_content,
-                'url' => $url,
+                'define_title' => $define_title,
+                'define_content' => $define_content,
+                'define_category' => '',
+                'define_url' => $define_url,
                     )
             )) {
-        echo "Success";
+        echo "Success. Insert pattern has been successed";
         exit();
     } else {
-        echo "Error. Please try again";
+        echo "Error. Insert pattern has been Error";
         exit();
     }
 }
@@ -140,7 +140,7 @@ if (is_admin()) {
 }
 
 function scrape_admin_page() {
-    add_menu_page('EFEI-16-Auto-Scrape-And-Post', 'EFEI-16 Auto Scrape And Post', 'activate_plugins', 'wp-scraper-admin', 'wp_scrape_layout');
+    add_menu_page('E-Scraper', 'E-Scraper', 'activate_plugins', 'wp-scraper-admin', 'wp_scrape_layout');
 }
 
 function scrape_settings() {
@@ -164,7 +164,7 @@ function wp_scrape_layout() {
     $post_categories = get_categories($args);
     ?>
     <!-- Tabs -->
-    <h2>EFEI-16 Auto Scrape And Post</h2>
+    <h2>E-Scraper</h2>
     <div id="tabs">
         <ul>
             <li><a href="#scrape_one" class="title_scrape">Scrape One Article</a></li>
@@ -199,7 +199,8 @@ function my_script_enqueuer() {
     //Enqueue my JS
     wp_enqueue_script('main-js', plugin_dir_url(__FILE__) . 'scripts/main.js', array('jquery'));
 
-    wp_enqueue_script('scrape-one-ajax', plugin_dir_url(__FILE__) . 'scripts/scrape-one-ajax.js', array('jquery'));
+    // wp_enqueue_script('scrape-one-ajax', plugin_dir_url(__FILE__) . 'scripts/scrape-one-ajax.js', array('jquery'));
+    wp_enqueue_script('scrape-content', plugin_dir_url(__FILE__) . 'scripts/scrape-content.js', array('jquery'));
     wp_enqueue_script('scrape-multi-ajax', plugin_dir_url(__FILE__) . 'scripts/scrape-multi-ajax.js', array('jquery'));
     wp_enqueue_script('define-pattern-ajax', plugin_dir_url(__FILE__) . 'scripts/define-pattern-ajax.js', array('jquery'));
     wp_enqueue_script('settings-ajax', plugin_dir_url(__FILE__) . 'scripts/settings-ajax.js', array('jquery'));
@@ -228,6 +229,11 @@ function my_script_enqueuer() {
 }
 
 //End setting
+
+
+
+
+
 //Scrape Content
 add_action('wp_ajax_scrape_process_one_ajax', 'scrape_process_one_ajax');
 
@@ -317,7 +323,7 @@ function check_supported_url($url) {
     //     return true;
     // }
 
-    $query = $wpdb->prepare("SELECT count(url) FROM `".$table_name."` WHERE url ='".$url."'");
+    $query = $wpdb->prepare("SELECT count(define_url) FROM `".$table_name."` WHERE define_url ='".$url."'");
     $result = $wpdb->get_var($query);
     if($result > 0)
         return true;
@@ -552,3 +558,223 @@ function remove_link_href($content) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//SCRAPE CONTENT
+add_action('wp_ajax_scrape_content_ajax', 'scrape_content_ajax');
+
+function scrape_content_ajax() {
+    header('Access-Control-Allow-Origin: *');
+
+    if (isset($_GET['url'])) {        
+        $content = file_get_contents(trim($_GET['url']));
+        $url = $_GET['url'];    
+        $domain_url = str_replace('www.', '', parse_url($url, PHP_URL_HOST));
+        
+        if (!check_supported_url($domain_url)){
+            echo json_encode(array('check_url'=>0,'domain_url'=>$domain_url));exit();
+        }
+
+
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'scrape_pattern';
+    $query = $wpdb->prepare("SELECT * FROM `".$table_name."` WHERE define_url ='".$domain_url."'");
+    $result = $wpdb->get_row($query,ARRAY_A);
+
+    //Get title pattern from database
+    $title_pattern = $result['define_title'];   
+    preg_match('/(?P<name>\w+).(?P<class>(.*))/', $title_pattern, $title_pattern_matches);
+    $title_pattern_tagName =  strtolower($title_pattern_matches['name']);
+    $title_pattern_className = strtolower($title_pattern_matches['class']);
+
+   
+    //get content pattern from database
+    $content_pattern = $result['define_content'];    
+    preg_match('/(?P<name>\w+).(?P<class>(.*))/', $content_pattern, $content_pattern_matches);
+    $content_pattern_tagName =  strtolower($content_pattern_matches['name']);
+    $content_pattern_className = strtolower($content_pattern_matches['class']);   
+
+    
+
+    echo json_encode(array('check_url'=>1,'content'=>$content,'domain_url'=>$domain_url,
+        'title_tagName'=>$title_pattern_tagName,'title_className'=>$title_pattern_className,
+        'content_tagName'=> $content_pattern_tagName,'content_className'=>$content_pattern_className));
+        exit();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// DEFINE PATTERN AND INSERT TO WP POST DEMO
+
+
+add_action('wp_ajax_scrape_content_pattern_ajax_demo', 'scrape_content_pattern_ajax_demo');
+
+
+function scrape_content_pattern_ajax_demo(){
+    $page = $_POST['content'];
+    $domain_url = $_POST['define_url'];
+    $post_title = $_POST['title'];
+    $category_id = $_POST['type'];
+
+
+
+    $post_content = $page;
+
+
+    $image_urls = $_POST['img'];
+
+    //echo json_encode(array('img'=>$image_urls));exit();
+    
+   
+    //echo json_encode(array("post_id"=>1,"img"=>$image_urls));exit();
+    
+
+
+    $list_img_link = array_filter($image_urls);
+
+    if (get_option('remove_link') == "checked") {
+        $post_content = remove_link_href($post_content);
+    }
+    //Upload Image to AWS S3 Amazon
+    if (get_option('upload_enable') == 'aws_upload_enable') {
+        require(plugin_dir_path(__FILE__) . "inc/upload_s3.php");
+        $list_s3 = upload_s3($list_img_link);
+        $post_content = str_replace($list_img_link, $list_s3, $post_content);
+    }
+
+    //Insert Post
+    $check_title = get_page_by_title($post_title, 'OBJECT', 'post');
+    if (empty($check_title)) {
+        //Create post object
+        $my_post = array(
+            'post_title' => $post_title,
+            'post_content' => $post_content,
+            'post_status' => 'publish',
+            'post_author' => 1,
+            'tax_input' => array('category' => $category_id)
+        );
+        // Insert the post into the database
+        $post_id = wp_insert_post($my_post, true);
+
+
+        //Upload to Wordpress media
+
+        if (get_option('upload_enable') == 'wp_upload_enable') {
+            //Insert Images to WP Media
+            $wp_attach_image_urls = upload_wp_media($list_img_link, $post_id);
+
+            $post_update_content = str_replace($list_img_link, $wp_attach_image_urls, $post_content);
+            //Update Post content for changed contents
+            $my_post_update = array(
+                'ID' => $post_id,
+                'post_content' => $post_update_content
+            );
+            $post_update_id = wp_update_post($my_post_update);
+        } else {
+            $attach_id = set_feature_image_demo($list_img_link[0], $post_id);
+            set_post_thumbnail($post_id, $attach_id);
+        }
+        //return $post_title;
+
+        echo json_encode(array("post_id"=>$post_id,'img'=>$list_img_link));exit();
+    }
+}
+
+function set_feature_image_demo($image_url, $post_id) {
+
+    $upload_dir = wp_upload_dir();
+    $image_data = file_get_contents($image_url);
+    $image_url = check_url_image($image_url);
+
+    $filename = basename($image_url);
+
+
+    $valid_image_types = array('gif', 'jpeg', 'png', 'jpg');
+    $wp_filetype = wp_check_filetype($filename, null);
+
+
+
+    if (in_array($wp_filetype["ext"], $valid_image_types)) {
+
+        if (wp_mkdir_p($upload_dir['path']))
+            $file = $upload_dir['path'] . '/' . $filename;
+        else
+            $file = $upload_dir['basedir'] . '/' . $filename;
+        file_put_contents($file, $image_data);
+
+        $attachment = array(
+            'post_mime_type' => $wp_filetype['type'],
+            'post_title' => sanitize_file_name($filename),
+            'post_content' => '',
+            'post_status' => 'inherit',
+        );
+        $attach_id = wp_insert_attachment($attachment, $file, $post_id);
+        require_once(ABSPATH . 'wp-admin/includes/image.php');
+
+
+        $attach_data = wp_generate_attachment_metadata($attach_id, $file);
+
+
+        wp_update_attachment_metadata($attach_id, $attach_data);
+
+        //set_post_thumbnail($post_id, $attach_id);
+        return $attach_id;
+    }
+}

@@ -55,6 +55,14 @@ jQuery(document).ready(function ($) {
         return title;
     }
 
+    window.removeTag = function removeTag(text){
+      text = text.replace(/<\/*.*?>/gi, '');
+      text = text.replace(/&nbsp;/g, '');
+      text = text.replace(/amp;/g,'');
+
+      return text;
+    }
+
 
 
 
