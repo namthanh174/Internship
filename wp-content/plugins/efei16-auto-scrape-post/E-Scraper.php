@@ -605,6 +605,11 @@ function remove_link_href($content) {
 
 
 
+
+
+
+
+
 //SCRAPE CONTENT
 add_action('wp_ajax_scrape_content_ajax', 'scrape_content_ajax');
 
@@ -617,7 +622,7 @@ function scrape_content_ajax() {
         $domain_url = str_replace('www.', '', parse_url($url, PHP_URL_HOST));
         
         if (!check_supported_url($domain_url)){
-            echo json_encode(array('check_url'=>0,'domain_url'=>$domain_url));exit();
+            echo json_encode(array('check_url'=>0,'url'=>$url));exit();
         }
 
 
@@ -661,7 +666,7 @@ function scrape_content_ajax() {
 
 
 
-// DEFINE PATTERN AND INSERT TO WP POST DEMO
+// DEFINE PATTERN AND INSERT TO WP POST DEMO . CONTENT FILER BY JAVASCRIPT
 
 
 add_action('wp_ajax_scrape_content_pattern_ajax_demo', 'scrape_content_pattern_ajax_demo');
@@ -733,7 +738,7 @@ function scrape_content_pattern_ajax_demo(){
         }
         //return $post_title;
 
-        echo json_encode(array("post_id"=>$post_id,'img'=>$list_img_link));exit();
+        echo json_encode(array("post_id"=>$post_id,'title'=>$post_title));exit();
     }
 }
 

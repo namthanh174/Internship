@@ -34,10 +34,18 @@ jQuery(document).ready(function ($) {
                 success:function(data){
 
                                 if(data.check_url == 0){
+                                   
 
                                     alert("Url not support");
                                     $('#wait1').hide();
                                     $('.result2').hide();
+
+                                    $( "#tabs" ).tabs( "option", "active", 2 );  <!-- Activate Tab Three -->
+                                    $('#define_url').val(data.url);
+                                   $('#define_title').val('');
+                                    $('#define_first_content').val('');
+                                    $('#define_last_content').val('');
+                                    
                                    
                                 }else{
 
@@ -108,7 +116,7 @@ jQuery(document).ready(function ($) {
                                                       success:function(data){
                                                         alert("Post success!")
                                                         //console.log(data.img);
-                                                                   $('.result1').show().append("<div class='title_return'>1. has been posted.</div><br />");                                                                   
+                                                                   $('.result1').show().append("<div class='title_return'>1.\" "+data.title+" \" has been posted.</div><br />");                                                                   
                                                                     $('#wait1').hide();
                                                                     $('.result2').hide();
                                                        
