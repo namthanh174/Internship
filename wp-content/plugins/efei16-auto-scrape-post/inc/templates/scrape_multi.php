@@ -3,26 +3,29 @@
 
     ?>
 
-    <h2>Multiple Scrape</h2>
+    <!-- <h2>Multiple Scrape</h2> -->
 
     <div class="container">
         <form action='' method='POST' id='scrape-multi-form'>
 
-            <div><span><b>URL Category :</b></span> </div>
-            <input type="text" id="url_multi" style="width:100%">
+            <table class="form-table">
+                <tr>
+                    <th><h4><?php esc_attr_e( 'URL Category : ', 'wp_admin_style' ); ?></h4></th>
+                    <td><input type="text" id="url_multi" style="width:100%"></td>
+                </tr>
+                <tr>
+                    <th><h4><?php esc_attr_e( 'Category : ', 'wp_admin_style' ); ?></h4></th>
+                    <td>
+                        <?php  include('show_add_category.php'); ?>
+                    </td>
+                </tr>
+                
 
-            <div><span><b>Category :</b></span></div>
+            </table>
 
+            
+            
 
-            <div id="type">
-                <?php
-                foreach ($post_categories as $category) {
-                    ?>
-                    <input type='checkbox' class='type' id="<?php echo $category->cat_ID; ?>" /><label><?php echo $category->cat_name; ?></label><br />
-                <?php } ?>
-            </div>
-
-            <br />
             <input class="button-primary" type="submit" id="post_multi" name="post_multi" value="<?php esc_attr_e( 'Submit' ); ?>" />
 
         </form>

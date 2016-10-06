@@ -11,21 +11,25 @@
 
  <div class="container">
         <form action='' method='POST' id='define-pattern-form'>
+            <table class="form-table">
+            <tr>
+                <th><h4><?php esc_attr_e( 'URL : ', 'wp_admin_style' ); ?></h4></th>
+                <td><input type="text" id="define_url" style="width: 100%" /></td>
+            </tr>
+            <tr>
+                <th><h4><?php esc_attr_e( 'Enter The Title : ', 'wp_admin_style' ); ?></h4></th>
+                <td><input type="text" id="define_title" style="width: 100%" /></td>
+            </tr>
+            <tr>
+                <th><h4><?php esc_attr_e( 'Enter The First Content: ', 'wp_admin_style' ); ?></h4></th>
+                <td><input type="text" id="define_first_content" style="width: 100%"  /></td>
+            </tr>
+            <tr>
+                <th><h4><?php esc_attr_e( 'Enter The Last Content', 'wp_admin_style' ); ?></h4></th>
+                <td><input type="text" id="define_last_content" style="width: 100%" /></td>
+            </tr>
 
-            <div><span><b>URL :</b></span> </div>
-            <input type="text" id="define_url" style="width:70%" />
-             <div><span><b>Define title :</b></span> </div>
-            <input type="text" id="define_title" style="width:70%" />
-            <input type="button" id="choose_title" name="choose_title" value="<?php esc_attr_e( 'Choose Title' ); ?>" />
-             <div><span><b>Define first content :</b></span> </div>
-            <input type="text" id="define_first_content" style="width:70%" />
-            <input type="button" id="choose_first_content" name="choose_first_content" value="<?php esc_attr_e( 'Choose First Content' ); ?>" />
-             <div><span><b>Define last content :</b></span> </div>
-            <input type="text" id="define_last_content" style="width:70%" />
-            <input type="button" id="choose_last_content" name="choose_last_content" value="<?php esc_attr_e( 'Choose Last Content' ); ?>" />
-
-
-            <br />
+            </table>
             <input class="button-primary" type="submit" id="define_submit" name="define_submit" value="<?php esc_attr_e( 'Submit' ); ?>" />
 
         </form>

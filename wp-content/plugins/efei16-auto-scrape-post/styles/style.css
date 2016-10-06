@@ -37,7 +37,17 @@
     width: 100%;
 }
 
+.choose_draft{
+    margin-right: 30%;
 
+}
+.childcategory{
+    padding-left: 2%;
+}
+
+.col_title {
+    margin-right: 2% !important;
+}
 
 
 

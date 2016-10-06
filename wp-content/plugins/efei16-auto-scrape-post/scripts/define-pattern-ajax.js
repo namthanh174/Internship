@@ -82,40 +82,46 @@ jQuery(document).ready(function ($) {
                                break;
                               }else{
                                 nodeTemp = nodeTemp.parentElement;
-
-                              }
+                                
+                               }
                             }
+
+                            //contentDOM = nodes[i];
                     
                             break;
                           }
 
                         }
-               
+               if(contentDOM != false){
+                      define_title = title.nodeName+"."+title.className;
+                     define_contentDOM = contentDOM.nodeName+"."+contentDOM.className;
+                     
+                       $.ajax({
+                              type: 'POST',
+                              url: ajaxurl,
+                              data: {
+                                  action: 'insert_scrape_pattern_table',
+                                  define_url: define_url,
+                                  define_title: define_title,
+                                  define_content:  define_contentDOM
+                              },
+                              success: function (response) {
 
-               define_title = title.nodeName+"."+title.className;
-               define_contentDOM = contentDOM.nodeName+"."+contentDOM.className;
-               
-                 $.ajax({
-                        type: 'POST',
-                        url: ajaxurl,
-                        data: {
-                            action: 'insert_scrape_pattern_table',
-                            define_url: define_url,
-                            define_title: define_title,
-                            define_content:  define_contentDOM
-                        },
-                        success: function (response) {
-
-                            alert(response);
-                            $( "#tabs" ).tabs( "option", "active", 0 );  <!-- Activate Tab one -->
-                            $('#scrape-one-form').submit();
-                        },
-                        error: function (error) {
-                            alert(error);
-                        }
+                                  alert(response);
+                                  $( "#tabs" ).tabs( "option", "active", 0 );  <!-- Activate Tab one -->
+                                  $('#scrape-one-form').submit();
+                              },
+                              error: function (error) {
+                                  alert(error);
+                              }
 
 
-                    });       
+                          });       
+                      
+                 }else{
+                  alert("Can not insert pattern");
+                 }
+
                    
                 }
             });

@@ -2,25 +2,6 @@
 
 
 
-<!-- Tabs -->
-<!--		<h2>Tabs</h2>
-		<div id="tabs">
-			<ul>
-				<li><a href="#scrape">Scrape</a></li>
-				<li><a href="#s3-setting">S3 Setting</a></li>
-				<li><a href="#settings">Settings</a></li>
-			</ul>
-                    <div id="scrape">
-                        
-                    </div>
-                    <div id="s3-setting">
-                        
-                    </div>
-                    <div id="settings">
-                        
-                    </div>
-                </div>-->
-
 
 
 
@@ -37,28 +18,53 @@
 //    $post_categories = get_categories($args);
     ?>
 
-    <h2>Single Scrape</h2>
+    <!-- <h2>Single Scrape</h2> -->
 
     <div class="container">
         <form action='' method='POST' id='scrape-one-form'>
 
-            <div><span><b>URL :</b></span> </div>
-            <input type="text" id="url_one" style="width:100%">
-
-            <div><span><b>Category :</b></span></div>
-
-
-            <div id="type">
-                <?php
-                foreach ($post_categories as $category) {
-                    ?>
-                    <input type='checkbox' class='type' id="<?php echo $category->cat_ID; ?>" /><label><?php echo $category->cat_name; ?></label><br />
-                <?php } ?>
-            </div>
+           <table class="form-table">
+           <tr> <th width="150"><h4><?php esc_attr_e( 'URL: ', 'wp_admin_style' ); ?></h4></th>
+            <td><input type="text" id="url_one" style="width:100%"></td>
+            </tr>
             
+            <tr>
+               <th><h4><?php esc_attr_e( 'Choose Scrape :', 'wp_admin_style' ); ?></h4></th>
+
+            
+             <!-- <h3>Choose Post Status</h3> -->
+            <td>        
+                <input type="radio" name="choose_scrape" id="choose_one_aritcle" class="choose_one_aritcle" value="one" checked="checked" />Scrape one article &nbsp;
+                <input type="radio" name="choose_scrape" id="choose_category" class="choose_category" value="multi" /> Scrape category
+            
+            </td>
+            
+            </tr>
 
 
-            <br />
+            <tr>
+            <th><h4><?php esc_attr_e( 'Category :', 'wp_admin_style' ); ?></h4></th>
+
+                
+                <td>
+                    <?php  include('show_add_category.php'); ?>
+                </td>
+            </tr>
+            <tr>
+               <th><h4><?php esc_attr_e( 'Choose Post Status :', 'wp_admin_style' ); ?></h4></th>
+
+            
+             <!-- <h3>Choose Post Status</h3> -->
+            <td>        
+                <input type="radio" name="choose_status" class="choose_draft" value="draft" checked="checked" /> Draft &nbsp;
+                <input type="radio" name="choose_status" class="choose_publish" value="publish" /> Published<br>
+                
+            
+            </td>
+            
+            </tr>
+
+            </table>
             <input class="button-primary" type="submit" id="post_one" name="post_one" value="<?php esc_attr_e( 'Submit' ); ?>" />
 
         </form>
