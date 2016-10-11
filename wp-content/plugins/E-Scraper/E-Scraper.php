@@ -30,51 +30,39 @@ register_activation_hook(__FILE__, 'scrape_activate');
 
 
 
-global $jal_db_version;
-$jal_db_version = '1.0';
+//----CREATE PATTERN TABLE  -------------/
+// global $jal_db_version;
+// $jal_db_version = '1.0';
 
-function scrape_pattern_table() {
-    global $wpdb;
-    global $jal_db_version;
+// function scrape_pattern_table() {
+//     global $wpdb;
+//     global $jal_db_version;
 
-    $table_name = $wpdb->prefix . 'scrape_pattern';
+//     $table_name = $wpdb->prefix . 'scrape_pattern';
 
-    $charset_collate = $wpdb->get_charset_collate();
+//     $charset_collate = $wpdb->get_charset_collate();
 
-    $sql = "CREATE TABLE $table_name (
-		id mediumint(9) NOT NULL AUTO_INCREMENT,
-		time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-		define_title varchar(255) NOT NULL,
-        define_content text NOT NULL,
-        parent_node text NOT NULL,   
-        define_category text,		
-		define_url varchar(255) DEFAULT '' NOT NULL,
-		PRIMARY KEY  (id)
-	) $charset_collate;";
+//     $sql = "CREATE TABLE $table_name (
+// 		id mediumint(9) NOT NULL AUTO_INCREMENT,
+// 		time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+// 		define_title varchar(255) NOT NULL,
+//         define_content text NOT NULL,
+//         parent_node text NOT NULL,   
+//         define_category text,		
+// 		define_url varchar(255) DEFAULT '' NOT NULL,
+// 		PRIMARY KEY  (id)
+// 	) $charset_collate;";
 
-    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-    dbDelta($sql);
+//     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+//     dbDelta($sql);
 
-    add_option('jal_db_version', $jal_db_version);
-}
-
-register_activation_hook(__FILE__, 'scrape_pattern_table');
-
-
-
-
-// add_action('wp_ajax_scrape_content_pattern_ajax', 'scrape_content_pattern_ajax');
-
-// function scrape_content_pattern_ajax() {
-//     header('Access-Control-Allow-Origin: *');
-
-//     if (isset($_GET['url'])) {        
-//         $content = url_get_contents(trim($_GET['url']));    
-//         $domain_url = str_replace('www.', '', parse_url($_GET['url'], PHP_URL_HOST));
-//         echo json_encode(array('content'=>$content,'domain_url'=>$domain_url));
-//         exit();
-//     }
+//     add_option('jal_db_version', $jal_db_version);
 // }
+
+// register_activation_hook(__FILE__, 'scrape_pattern_table');
+//----  END  -------------/
+
+
 
 //Insert pattern of Url to Database
 add_action('wp_ajax_insert_scrape_pattern_table', 'insert_scrape_pattern_table');
@@ -89,27 +77,68 @@ function insert_scrape_pattern_table() {
         $parent_node = $_POST['define_parent_node'];
     }
 
- 
 
 
-    $table_name = $wpdb->prefix . 'scrape_pattern';
-    
-    if ($wpdb->insert(
-                $table_name, array(
-                'time' => current_time('mysql'),
-                'define_title' => $define_title,
-                'define_content' => $define_content,
-                'parent_node' => $parent_node,
-                'define_category' => '',
-                'define_url' => $define_url,
-                    )
-            )) {
-        echo "Success. Insert pattern has been successed";
-        exit();
-    } else {
-        echo "Error. Insert pattern has been Error";
-        exit();
-    }
+     $data = array( 
+                        'time' => current_time('mysql'),
+                        'define_title' => $define_title,
+                        'define_content' => $define_content,
+                        'parent_node' => $parent_node,
+                        'define_category' => '',
+                        'define_url' => $define_url,
+                            
+                    );
+
+        $data_string = json_encode($data);
+
+        $url_api = 'efe.com.vn/thanh_vo/api-db/api.php/escraper_scrape_pattern';
+        $result = CallAPI('POST', $url_api, $data_string);
+
+        if($result)
+        {
+            echo "Success. Insert pattern has been successed";
+            exit();
+        } else {
+            echo "Error. Insert pattern has been Error";
+            exit();
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // $table_name = $wpdb->prefix . 'scrape_pattern';    
+    // if ($wpdb->insert(
+    //                     $table_name, array(
+    //                     'time' => current_time('mysql'),
+    //                     'define_title' => $define_title,
+    //                     'define_content' => $define_content,
+    //                     'parent_node' => $parent_node,
+    //                     'define_category' => '',
+    //                     'define_url' => $define_url,
+    //                         )
+    //                 )
+    //     ) {
+    //     echo "Success. Insert pattern has been successed";
+    //     exit();
+    // } else {
+    //     echo "Error. Insert pattern has been Error";
+    //     exit();
+    // }
+
+
+   
+
+
 }
 
 /*
@@ -174,6 +203,7 @@ function wp_scrape_layout() {
             <li><a href="#define_pattern" class="title_scrape">Define The Pattern From URL</a></li>
             <li><a href="#s3-setting" class="title_scrape">S3 Setting</a></li>
             <li><a href="#settings" class="title_scrape">Settings</a></li>
+            <li><a href="#up_pro" class="title_scrape">Upgrade to PRO Version</a></li>
         </ul>
         <div id="scrape_one">
     <?php require('inc/templates/scrape_one.php'); ?>
@@ -186,6 +216,9 @@ function wp_scrape_layout() {
         </div>
         <div id="settings">
     <?php require('inc/templates/scrape_settings.php'); ?>
+        </div>
+        <div id="up_pro">
+    <?php require('inc/templates/upgrade_pro.php'); ?>
         </div>
     </div>
 
@@ -238,19 +271,24 @@ function my_script_enqueuer() {
 
 
 function check_supported_url($url) {
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'scrape_pattern';
+
+    $api_url = 'efe.com.vn/thanh_vo/api-db/api.php/escraper_scrape_pattern/'.$url;
+        $result = CallAPI('GET', $api_url, $data = false);
+        if($result)
+                return true;
+            return false; 
+
+    // global $wpdb;
+    // $table_name = $wpdb->prefix . 'scrape_pattern';
     
-    $query = $wpdb->prepare("SELECT count(define_url) FROM `".$table_name."` WHERE define_url ='".$url."'");
-    $result = $wpdb->get_var($query);
-    if($result > 0)
-        return true;
-    return false; 
-    
+    // $query = $wpdb->prepare("SELECT count(define_url) FROM `".$table_name."` WHERE define_url ='".$url."'");
+    // $result = $wpdb->get_var($query);
+    // if($result > 0)
+    //     return true;
+    // return false; 
 
 
-    // $supported_url = array('techcrunch.com', 'marrybaby.vn', 'tintucnongnghiep.com');
-    // if (in_array($url, $supported_url))
+
        
     
 }
@@ -305,7 +343,7 @@ function url_get_contents ($url) {
          curl_close($ch);
     
     
-//$source = file_get_contents($url);
+
 
 
     return $source;
@@ -331,45 +369,19 @@ add_action('wp_ajax_scrape_raw_content_ajax', 'scrape_raw_content_ajax');
 
 function scrape_raw_content_ajax() {
     header('Access-Control-Allow-Origin: *');
-    // ob_start("ob_gzhandler");
+    
     if (isset($_GET['url'])) { 
         $url = trim($_GET['url']);      
         
         $content = url_get_contents($url);
-       
-        echo $content;exit();
-        //$content = array_filter((array)json_decode($content), "is_scalar");  
-        
-        // $json = file_get_contents($url);
-        // $json=str_replace('},
 
-        // ]',"}
-
-        // ]",$json);
-        // $data = json_decode($json);
-        // $domain_url = str_replace('www.', '', parse_url($url, PHP_URL_HOST));
-
-        // echo json_encode(array('content'=>$data,'domain_url'=>$domain_url));  
-        //     exit();
-
-
-         
-        //$domain_url = str_replace('www.', '', parse_url($url, PHP_URL_HOST));
-
-
-
-
-
-
-
-        
-        if($content == false)
-        {
-            echo json_encode(array('data'=>'error'));exit();
+        if($content == false){
+            echo 'error';exit();
         }
        
-             echo json_encode(array('content'=>$content,'domain_url'=>$domain_url));  
-            exit();
+        echo $content;exit();
+        
+        
     }
 }
 
@@ -382,7 +394,7 @@ add_action('wp_ajax_scrape_content_ajax', 'scrape_content_ajax');
 
 function scrape_content_ajax() {
     header('Access-Control-Allow-Origin: *');
-    //echo json_encode(array('check_url'=>$_GET['url']));exit();
+    
 
     if (isset($_GET['url'])) {        
         //$content = url_get_contents(trim($_GET['url']));
@@ -397,25 +409,31 @@ function scrape_content_ajax() {
 
 
 
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'scrape_pattern';
-    $query = $wpdb->prepare("SELECT * FROM `".$table_name."` WHERE define_url ='".$url."'");
-    $result = $wpdb->get_row($query,ARRAY_A);
+    // global $wpdb;
+    // $table_name = $wpdb->prefix . 'scrape_pattern';
+    // $query = $wpdb->prepare("SELECT * FROM `".$table_name."` WHERE define_url ='".$url."'");
+    // $result = $wpdb->get_row($query,ARRAY_A);
+
+
+
+        $api_url = 'efe.com.vn/thanh_vo/api-db/api.php/escraper_scrape_pattern/'.$url;
+        $result = CallAPI('GET', $api_url, $data = false);
+        $result = json_decode($result);
 
     //Get title pattern from database
-    $title_pattern = $result['define_title'];   
+    $title_pattern = $result->define_title;   
     preg_match('/(?P<name>\w+).(?P<class>(.*))/', $title_pattern, $title_pattern_matches);
     $title_pattern_tagName =  strtolower($title_pattern_matches['name']);
     $title_pattern_className = strtolower($title_pattern_matches['class']);
 
    
     //get content pattern from database
-    $content_pattern = $result['define_content'];    
+    $content_pattern = $result->define_content;    
     preg_match('/(?P<name>\w+).(?P<class>(.*))/', $content_pattern, $content_pattern_matches);
     $content_pattern_tagName =  strtolower($content_pattern_matches['name']);
     $content_pattern_className = strtolower($content_pattern_matches['class']);  
     //get parent pattern from database
-    $parent_pattern = $result['parent_node'];    
+    $parent_pattern = $result->parent_node;    
     preg_match('/(?P<name>\w+).(?P<class>(.*))/', $parent_pattern, $parent_pattern_matches);
     $parent_pattern_tagName =  strtolower($parent_pattern_matches['name']);
     $parent_pattern_className = strtolower($parent_pattern_matches['class']);   
@@ -462,13 +480,7 @@ function scrape_post_content_ajax(){
 
     $image_urls = $_POST['img'];
 
-    //echo json_encode(array('img'=>$image_urls));exit();
     
-   
-    //echo json_encode(array("post_id"=>1,"img"=>$image_urls));exit();
-    
-
-
     $list_img_link = array_filter($image_urls);
 
     if (get_option('remove_link') == "checked") {
@@ -620,4 +632,47 @@ function add_category_ajax() {
     }
     
 
+}
+
+
+
+
+
+
+
+
+
+
+function CallAPI($method, $url, $data = false)
+{
+    $curl = curl_init();
+
+    switch ($method)
+    {
+        case "POST":
+            curl_setopt($curl, CURLOPT_POST, 1);
+            if ($data)
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+            break;
+        case "PUT":
+            curl_setopt($curl, CURLOPT_PUT, 1);
+            break;
+        default:
+            if ($data)
+                $url = sprintf("%s?%s", $url, http_build_query($data));
+    }
+
+    // Optional Authentication:
+    curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    curl_setopt($curl, CURLOPT_USERPWD, "username:password");
+
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);  
+
+
+    $result = curl_exec($curl);
+
+    curl_close($curl);
+
+    return $result;
 }

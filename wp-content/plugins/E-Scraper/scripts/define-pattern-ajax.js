@@ -28,17 +28,10 @@ jQuery(document).ready(function ($) {
                 },
                 success:function(data){
                   
-                    //alert(data.data);
-                 
-                    // console.log(data);
-                    // console.log(data.content);
-                    // console.log(data.domain_url);
-                    // define_url = data.domain_url;
                     l = getLocation(define_url);
                     define_url  = l.hostname;
                     define_url = define_url.replace('www.','');
-                    //patname = l.pathname;
-                    //alert(define_url);
+                    
                     
                      var response = data;
                       var xmlString = response
@@ -109,32 +102,6 @@ jQuery(document).ready(function ($) {
                       }//end for
 
 
-                        //Run second
-                        // if(title == false){
-                        //     for(var i= 0;i < nodes.length ; i++){
-                        //       if((nodes[i].nodeName == 'SCRIPT') || (nodes[i].nodeName == 'svg') || (nodes[i].nodeName == 'STYLE') || (nodes[i].className == 'clearfix')){
-                        //             continue;
-                        //         }
-                             
-                        //       text = removeTag(nodes[i].innerHTML)
-                        //       text = escape(text.toLowerCase());
-                        //       if((nodes[i].nodeName == 'H1') || (nodes[i].nodeName == 'H2') ||(nodes[i].nodeName == 'H3')){
-
-                        //         if(text.search(define_title) != -1){  
-                                  
-                        //                  title = nodes[i];
-                        //                  break;
-                                  
-                        //         }
-                        //       }
-                        //   }
-                        // }
-
-
-
-                        // console.log(define_first_content);
-                        // console.log(define_last_content);
-                        // console.log(title);
 
                         for(var i = (nodes.length-1);i >= 0;i--){
 
@@ -143,11 +110,9 @@ jQuery(document).ready(function ($) {
                                                             continue;
                                                         }
                          text = removeTag(nodes[i].innerHTML);
-                          //nodeText = nodes[i].innerHTML;
-                          //text = text.replace(/(<([^>]+)>)/ig, '');
+                          
                           text = escape(text.toLowerCase());
-                          //console.log(i +" : "+ text);
-                          //console.log(text);
+                          
                           
                           if ((text.search(define_first_content) != -1) && (text.search(define_last_content) != -1)) {                            
                            
@@ -176,15 +141,7 @@ jQuery(document).ready(function ($) {
                                 
                               }
 
-                            // parent_node = contentDOM.parentNode;
                             
-                             
-                             // contentDOM = nodes[i];
-
-                             // console.log(contentDOM);
-                             // console.log(parent_node);
-                             // console.log(text.search(define_first_content));
-                             // console.log(text.search(define_last_content));
                             
                               break;
 
@@ -194,37 +151,16 @@ jQuery(document).ready(function ($) {
 
                         }
 
-                        //Check second
-                      //   if((contentDOM == false) && (parent_node == false)){
-                      //     for(var i = (nodes.length-1);i >= 0;i--){
-
-
-                      //     if((nodes[i].nodeName == 'SCRIPT') || (nodes[i].nodeName == 'svg') || (nodes[i].nodeName == 'STYLE') ||(nodes[i].nodeName == 'SECTION')){
-                      //                                       continue;
-                      //                                   }
-                      //    text = removeTag(nodes[i].innerHTML);
-                         
-                      //     text = escape(text.toLowerCase());
-                      //     if ((text.search(define_first_content) != -1) && (text.search(define_last_content) != -1)) { 
-
-                      //         contentDOM = nodes[i];
-                      //         parent_node = contentDOM.parentNode;
-                      //     }
-                          
-                      //   }
-                      // }
+                       
 
 
 
                if((contentDOM != false) && (parent_node != false)){
-                      //define_title = title.nodeName+"."+title.className;
+                      
                       define_title = title_tag+"."+title_class;
 
                       define_contentDOM = contentDOM.nodeName+"."+contentDOM.className;
 
-                      //Only get first class of parent node
-                      
-                      //first_class_parent = get_first_string(parent_node.className);
 
                       
 

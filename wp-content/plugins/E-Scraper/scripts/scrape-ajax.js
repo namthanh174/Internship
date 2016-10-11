@@ -15,8 +15,7 @@ jQuery(document).ready(function ($) {
                 urls.push(href);
             }
 
-
-            //res.push($(this).attr('href')+"---");
+           
         });
 
         return urls;
@@ -48,10 +47,6 @@ jQuery(document).ready(function ($) {
     window.get_title;
     get_title = function get_title(data) {
         var title = $(data).find('h1').html();
-//         $('h1',data).each(function(){
-//            title.push($(this).html());
-//        });
-
         return title;
     }
 
@@ -70,11 +65,7 @@ jQuery(document).ready(function ($) {
         l.href = href;
         return l;
     };
-    // var l = getLocation("http://example.com/path");
-    // console.debug(l.hostname)
-    // >> "example.com"
-    // console.debug(l.pathname)
-    // >> "/path"
+   
 //End funtion get domain url
 
 
@@ -93,13 +84,7 @@ window.get_first_string = function(str){
 
     //FIlter and GET Titile and Node by JS
     window.scrape_get_dom_js = function(response,title_tagName,title_className,content_tagName,content_className,parent_tagName,parent_className){
-        // console.log(response);
-        // console.log(title_tagName);
-        // console.log(title_className);
-        // console.log(content_tagName);
-        // console.log(content_className);
-        // console.log(parent_tagName);
-        // console.log(parent_className);
+        
 
                                                 var xmlString = response
                                                 , parser = new DOMParser()
@@ -111,50 +96,47 @@ window.get_first_string = function(str){
 
 
                                                     for(var i = 0;i < nodes.length;i++){
-                                                        if((nodes[i].nodeName == 'SCRIPT') || (nodes[i].nodeName == 'svg') || (nodes[i].nodeName == 'STYLE')){
+                                                        if((nodes[i].nodeName == 'SCRIPT') || (nodes[i].nodeName == 'svg') || (nodes[i].nodeName == 'STYLE') || (nodes[i].nodeName == 'SECTION') || (nodes[i] instanceof SVGElement)){
                                                             continue;
                                                         }
                                                           tag_name = nodes[i].nodeName.toLowerCase();
 
-                                                          if(nodes[i].hasAttribute('class')){
-                                                            if(nodes[i].hasAttribute('class') && (nodes[i].className != '')){
+                                                         
+                                                         if(nodes[i].hasAttribute('class') && (nodes[i].className != '')){
                                                                 class_name = nodes[i].className;                                                          
 
-                                                               if ((tag_name == title_tagName) && (class_name == title_className)) {                           
-                                                                title = nodes[i];
+                                                               if ((tag_name == title_tagName) && (class_name == title_className)){                           
+                                                                  title = nodes[i];
                                                                   break;
                                                                 }
-                                                            }  
-                                                          }else{
-                                                            temp = nodes[i];
-                                                            while(true){
-                                                              if(temp.hasAttribute('class') && (temp.className != "")){
-                                                               class_name = temp.className;
-                                                                break; 
-                                                              }else{
-                                                                temp = temp.parentNode;
-                                                              }
-                                                            }
-
-                                                            if ((tag_name == title_tagName) && (class_name == title_className)) {                           
-                                                                title = nodes[i];
-                                                                  break;
-                                                                }
+                                                              
                                                           }
+                                                          // else{
+                                                          //   temp = nodes[i];
+                                                          //   while(true){                                                             
+                                                          //      console.log(temp);
+                                                          //       if(temp.hasAttribute('class') && (temp.className != "")){
+                                                          //      class_name = temp.className;
+                                                          //       break; 
+                                                                                                                             
+                                                          //     }else{
+                                                          //       temp = temp.parentNode;
+                                                          //     }
+                                                          //   }
+
+                                                          //   if ((tag_name == title_tagName) && (class_name == title_className)) {                           
+                                                          //       title = nodes[i];
+                                                          //         break;
+                                                          //       }
+                                                          // }
                                                             
                                                     }
 
 
-                                                    // console.log(title);
-                                                    // alert('aa')
-
-                                                    // if(title == false){
-                                                    //     title = "No Title Found";
-                                                    // }
-                                                    //  console.log(title);
+                                                    
                                                     if(title == false){
                                                             for(var i = 0;i < nodes.length;i++){
-                                                            if((nodes[i].nodeName == 'SCRIPT') || (nodes[i].nodeName == 'svg') || (nodes[i].nodeName == 'STYLE')){
+                                                            if((nodes[i].nodeName == 'SCRIPT') || (nodes[i].nodeName == 'svg') || (nodes[i].nodeName == 'STYLE') || (nodes[i].nodeName == 'SECTION') || (nodes[i] instanceof SVGElement)){
                                                                 continue;
                                                             }
                                                             tag_name = nodes[i].nodeName.toLowerCase();
@@ -246,44 +228,7 @@ window.get_first_string = function(str){
                                                     }//End for
 
 
-                                                    //return false;
-
-
-
-
-                                                    // console.log(contentDOM);
-
-                                                    // for(var i = (nodes.length-1);i >= 0;i--){
-                                                        
-                                                    //     tag_name = nodes[i].nodeName.toLowerCase();
-                                                    //     if(nodes[i].hasAttribute('class') && (nodes[i].className != '')){
-                                                    //       class_name = nodes[i].className.toLowerCase(); 
-
-                                                    //        if ((tag_name == title_tagName) && (class_name == title_className)) {                           
-                                                    //         title = nodes[i];
-                                                    //           break;
-                                                    //         }
-                                                    //     }
-                                                    //     if (tag_name == title_tagName) {                           
-                                                    //         title = nodes[i];
-                                                    //           break;
-                                                    //         }
-                                                           
-                                                    // }
-
-                                                    // for(var i = (nodes.length-1);i >= 0;i--){
-                                                    //     tag_name = nodes[i].nodeName.toLowerCase();
-
-
-                                                    //     if(nodes[i].hasAttribute('class') && (nodes[i].className != '')){
-                                                    //         class_name = nodes[i].className.toLowerCase();  
-                                                    //        if ((tag_name == content_tagName) && (class_name == content_className)) {                           
-                                                    //         contentDOM = nodes[i];
-                                                    //         break;
-                                                    //       } 
-                                                    //     }
-
-                                                    // }
+                                                  
 
                                                     return {title:title,contentDOM: contentDOM};
 

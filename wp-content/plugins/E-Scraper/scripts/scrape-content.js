@@ -15,10 +15,9 @@ jQuery(document).ready(function ($) {
 
 
         if ($('#url_one').val() == "") {
-            //alert("please enter url!");
             return false;
         }
-//        $('.result1').innerHTML  = '';
+
         $('.result1').empty().hide();
 
         // $('#wait1').show();
@@ -114,13 +113,6 @@ jQuery(document).ready(function ($) {
                                           title = results.title;
                                           contentDOM = results.contentDOM;
 
-                                        
-                                              //console.log(title_tagName + title_className + content_tagName + content_className)
-                                               // console.log(title)
-                                               // console.log(contentDOM)
-
-
-
                                               
                                               var img = get_img(contentDOM.outerHTML);                                                   
                                               $.ajax({
@@ -145,9 +137,6 @@ jQuery(document).ready(function ($) {
                                                   }else{
                                                     $('.result1').show().append("<div class='title_return'>The Post has been posted before.</div><br />"); 
                                                   }
-                                                   
-                                                   // $('#wait1').hide();
-                                                            
                                                            
                                                  
                                                 },
@@ -337,25 +326,6 @@ jQuery(document).ready(function ($) {
 
 
        }  //End Scarpe Category
-
-
-
-
-
-
-
-
-
-
-
-  
-
-
-
-
-    
-
-
 
 
 
