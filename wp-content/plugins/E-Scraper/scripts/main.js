@@ -1,4 +1,13 @@
 jQuery(document).ready(function($) {
+
+
+    $('#define_url').prop('required',true);
+     $('#define_title').prop('required',true);
+      $('#define_first_content').prop('required',true);
+       $('#define_last_content').prop('required',true);
+$('#url_one').prop('required',true);
+
+
     $('#tabs').tabs();
 
     //Choose publish post or not
@@ -47,6 +56,14 @@ jQuery(document).ready(function($) {
     	})
     });
 
+
+
+
+//Progress bar
+
+
+    
+  
 
 
 
