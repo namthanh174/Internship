@@ -6,6 +6,27 @@ jQuery(document).ready(function ($) {
     $('#scrape-one-form').submit(function () {
       
 
+      // if($('#upload_enable').val() == null){
+
+           
+      //           var b =  $(this).serialize();
+      //           $.post( 'options.php', b ).error( 
+      //               function() {
+      //                   // alert('error');
+      //               }).success( function() {
+      //                   // alert('success');   
+      //               });
+                   
+                
+            
+      // }
+
+      var choose_upload_img = $('input[name=upload_enable]:checked').val();
+      
+
+      var remove_link = $('#remove_link').attr('checked');
+      
+
       var progressbar = $( "#progressbar" );
       var val = 10;
       progressbar.progressbar({'value':val});
@@ -20,7 +41,7 @@ jQuery(document).ready(function ($) {
 
         $('.result1').empty().hide();
 
-        // $('#wait1').show();
+        
 
 
 
@@ -59,8 +80,10 @@ jQuery(document).ready(function ($) {
                 data:{
                     action: 'scrape_content_ajax',
                     url: define_url,
+                    scrape_category: 0
                 },                      
                 success:function(data){
+                 
                               val += 20;
                                progressbar.progressbar({'value':val});
                                 if(data.check_url == 0){
@@ -121,14 +144,18 @@ jQuery(document).ready(function ($) {
                                                 dataType: 'json',
                                                 data:{
                                                     action: 'scrape_post_content_ajax',
-                                                    content: contentDOM.innerHTML,
+                                                    content: contentDOM.outerHTML,
                                                     title : title.innerText,
                                                     define_url : define_url,
                                                     img : img,
                                                     type: selected,
-                                                    post_status : post_status
+                                                    post_status : post_status,
+                                                    choose_upload_img : choose_upload_img,
+                                                    remove_link : remove_link
+
                                                 },                                                
                                                 success:function(data){
+                                                  console.log(data);
                                                   val += 40;
                                                    progressbar.progressbar({'value':val});
                                                  if(data){
@@ -210,26 +237,47 @@ jQuery(document).ready(function ($) {
                                            var parent_className = data.parent_className;
 
 
-
                                       
 
                                       //Ajax get contents from url
                                        $.ajax({
                                                   type: 'GET',
+                                                  dataType: 'json',
                                                   url: ajaxurl,                                                                                                   
                                                   data: {action: 'scrape_raw_content_ajax',
-                                                      url: url                                                      
+                                                      url: url ,
+                                                      scrape_category: 1,
+                                                      define_url : define_url
+
                                                   },
                                                   success: function(data){
+                                                    console.log(data);
+
+                                                            // console.log(data.pattern_category.category_tag);
+                                                            // console.log(data.pattern_category.category_class);
+
+                                                            //Get content category
+                                                            if(data == null){
+                                                              alert('We can not get category');
+                                                              return false;
+                                                            }
+                                                            response = get_category_dom(data.content,data.pattern_category.category_tag,data.pattern_category.category_class);
+                                                            // var urls = get_urls(response);
+                                                            // console.log(urls);
+                                                            // return false;
+                                                            
+
+
+                                                  
                                                                 val += 10;
                                                                progressbar.progressbar({'value':val});
-                                                              var response = data;
+                                                              // var response = data;
                                                     
 
                                                               globalVar = 0;
                                                            
                                                               var urls = get_urls(response);
-
+                                                             
                                                               console.log(urls);
                                                               var number_urls = urls.length;
                                                               //console.log(number_urls);
@@ -264,7 +312,9 @@ jQuery(document).ready(function ($) {
                                                                                 define_url : define_url,
                                                                                 img : img,
                                                                                 type: selected,
-                                                                                post_status : post_status
+                                                                                post_status : post_status,
+                                                                                choose_upload_img : choose_upload_img,
+                                                                                remove_link : remove_link
                                                                             },
                                                                             success:function(response){
 
@@ -281,6 +331,7 @@ jQuery(document).ready(function ($) {
                                                                               if(number_urls == 0){
                                                                                 $('#wait1').hide();
                                                                                 $('.result1').show().append("<div class='title_return'>Completed.</div> <br />");
+                                                                                progressbar.progressbar({'value': 100});
                                       
                                                                               }
 
@@ -291,6 +342,8 @@ jQuery(document).ready(function ($) {
                                                                                   if(number_urls == 0){
                                                                                     $('#wait1').hide();
                                                                                     $('.result1').show().append("<div class='title_return'>Completed.</div> <br />");
+
+                                                                                    progressbar.progressbar({'value': 100});
                                                                                   }
                                                                                   console.log('Could not get posts, server response: ' + textStatus + ': ' + errorThrown);
                                                                               }

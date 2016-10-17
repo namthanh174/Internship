@@ -62,10 +62,7 @@ jQuery(document).ready(function ($) {
 
 
 
-                        for(var i= 0;i < nodes.length; i++){
-                          if((nodes[i].nodeName == 'SCRIPT') || (nodes[i].nodeName == 'svg') || (nodes[i].nodeName == 'STYLE') || (nodes[i].className == 'clearfix')){
-                                continue;
-                            }
+                        for(var i= 0;i < nodes.length; i++){                           
                           //nodeText = nodes[i].innerHTML;
                           //text = nodeText.replace(/(<([^>]+)>)/ig, '');
                           text = removeTag(nodes[i].innerHTML)
@@ -106,11 +103,11 @@ jQuery(document).ready(function ($) {
                         for(var i = (nodes.length-1);i >= 0;i--){
 
 
-                          if((nodes[i].nodeName == 'SCRIPT') || (nodes[i].nodeName == 'svg') || (nodes[i].nodeName == 'STYLE') ||(nodes[i].nodeName == 'SECTION') ||(nodes[i].className == 'clearfix')){
-                                                            continue;
-                                                        }
-                         text = removeTag(nodes[i].innerHTML);
-                          
+                           if(skip_node(nodes[i]))
+                                continue;
+                              console.log(nodes[i])
+
+                         text = removeTag(nodes[i].innerHTML);                          
                           text = escape(text.toLowerCase());
                           
                           
@@ -119,7 +116,16 @@ jQuery(document).ready(function ($) {
 
                             nodeTemp = nodes[i];                                                     
                             while(true){
-                             
+
+                            
+                                 if(skip_node(nodeTemp)){
+                                  nodeTemp = nodeTemp.parentNode;
+                                  continue; 
+                                 }
+                                     
+
+
+
                               if(nodeTemp.hasAttribute('class') && (nodeTemp.className != "")){
                                contentDOM = nodeTemp;
                                break;
@@ -130,7 +136,12 @@ jQuery(document).ready(function ($) {
                             }
 
                               nodeTemp1 = nodeTemp.parentNode; 
-                              while(true){                                
+                              while(true){
+                               if(skip_node(nodeTemp1)){
+                                nodeTemp1 = nodeTemp1.parentNode;
+                                 continue; 
+                               }
+                                                                   
                                 if(nodeTemp1.hasAttribute('class') && (nodeTemp1.className != "")){
                                  parent_node = nodeTemp1;
                                  break;
@@ -153,7 +164,9 @@ jQuery(document).ready(function ($) {
 
                        
 
-
+                        console.log(parent_node);
+                        console.log(contentDOM);
+                        console.log(title_tag)
 
                if((contentDOM != false) && (parent_node != false)){
                       

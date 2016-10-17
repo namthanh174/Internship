@@ -12,9 +12,6 @@ function upload_s3($urls) {
     $secret = trim(get_option('s3_secret_key'));
     $bucket_name = trim(get_option('s3_name'));
     
-  
-    
-    
     
     $credentials = new Aws\Credentials\Credentials($key,$secret);
 

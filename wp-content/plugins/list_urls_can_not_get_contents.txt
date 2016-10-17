@@ -3,3 +3,8 @@ can not get contents :
 http://www.news.com.au/
 cnn.com
 
+
+
+key pro version cua plugin Phu
+license =  'ASRT4IQ9EJ6'
+secret_key = "^AJ9!9!9E%9Mm%D0A6egmX*ELLnJU8CM8M+v_~gC1SOPJR^KAWqmtlq4"

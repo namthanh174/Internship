@@ -9,7 +9,7 @@ jQuery(document).ready(function ($) {
 
         var urls = [];
 
-        $('h2', data).each(function () {
+        $('h2, h1, h3, h4', data).each(function () {
             var href = $(this).find('a').attr('href');
             if (href) {
                 urls.push(href);
@@ -43,6 +43,9 @@ jQuery(document).ready(function ($) {
             img.push($(this).attr('src'));
         });
         return img;
+
+
+       
     }
     window.get_title;
     get_title = function get_title(data) {
@@ -81,6 +84,14 @@ window.get_first_string = function(str){
 
 }
 
+window.skip_node = function(node){
+  if((node.nodeName == 'SCRIPT') || (node.nodeName == 'svg') || (node.nodeName == 'STYLE') || (node.nodeName == "SECTION") || (node instanceof SVGElement)){
+    return true;                                                        
+     }
+
+     return false;
+}
+
 
     //FIlter and GET Titile and Node by JS
     window.scrape_get_dom_js = function(response,title_tagName,title_className,content_tagName,content_className,parent_tagName,parent_className){
@@ -96,9 +107,7 @@ window.get_first_string = function(str){
 
 
                                                     for(var i = 0;i < nodes.length;i++){
-                                                        if((nodes[i].nodeName == 'SCRIPT') || (nodes[i].nodeName == 'svg') || (nodes[i].nodeName == 'STYLE') || (nodes[i].nodeName == 'SECTION') || (nodes[i] instanceof SVGElement)){
-                                                            continue;
-                                                        }
+                                                       
                                                           tag_name = nodes[i].nodeName.toLowerCase();
 
                                                          
@@ -136,9 +145,7 @@ window.get_first_string = function(str){
                                                     
                                                     if(title == false){
                                                             for(var i = 0;i < nodes.length;i++){
-                                                            if((nodes[i].nodeName == 'SCRIPT') || (nodes[i].nodeName == 'svg') || (nodes[i].nodeName == 'STYLE') || (nodes[i].nodeName == 'SECTION') || (nodes[i] instanceof SVGElement)){
-                                                                continue;
-                                                            }
+                                                             
                                                             tag_name = nodes[i].nodeName.toLowerCase();
                                                             if(tag_name == title_tagName) {                           
                                                                 title = nodes[i];
@@ -147,18 +154,19 @@ window.get_first_string = function(str){
                                                         }
                                                      }
 
-                                                     console.log(title)
+                                                    //  console.log(title)
 
-                                                    console.log(parent_tagName);
-                                                    console.log(parent_className);
+                                                    // console.log(parent_tagName);
+                                                    // console.log(parent_className);
 
                                                     for(var i = 0;i < nodes.length;i++){
-                                                        if((nodes[i].nodeName == 'SCRIPT') || (nodes[i].nodeName == 'svg') || (nodes[i].nodeName == 'STYLE') || (nodes[i].nodeName == 'SECTION') || (nodes[i] instanceof SVGElement)){
+                                                         if(skip_node(nodes[i])){
+                                                          // console.log(nodes[i]);
                                                             continue;
-                                                        }
+                                                         }
 
                                                         tag_name = nodes[i].nodeName.toLowerCase();
-
+                                                        //console.log(tag_name)
 
                                                         if(nodes[i].hasAttribute('class') && (nodes[i].className != '')){
 
@@ -168,29 +176,42 @@ window.get_first_string = function(str){
                                                             
                                                              
                                                            if ((tag_name == content_tagName) && (class_name == content_className)) { 
-                                                               
+                                                               parent_tag_name = false;
+                                                                 parent_class_name  = false;
+                                                               temp = nodes[i].parentElement;
+                                                                while(true){
+                                                                  if(skip_node(temp)){
+                                                                    temp = temp.parentElement;
+                                                                    continue;
+                                                                  }
 
-                                                                 parent_tag_name = nodes[i].parentElement.nodeName.toLowerCase();
-                                                                 parent_class_name  = nodes[i].parentElement.className.toLowerCase();
-                                                                console.log(parent_tag_name)
-                                                                console.log(parent_class_name);
+                                                                parent_tag_name = temp.nodeName.toLowerCase();
+                                                                 parent_class_name  = temp.className.toLowerCase();
+                                                                 break;
+                                                                }
+                                                                 
+                                                                // console.log(parent_tag_name)
+                                                                // console.log(parent_class_name);
                                                                     if(parent_class_name != ''){ 
-                                                                        console.log(0)
+                                                                        // console.log(0)
                                                                         if((parent_tag_name == parent_tagName) && (parent_class_name == parent_className)){
-                                                                            console.log(1)
+                                                                            // console.log(1)
                                                                             contentDOM = nodes[i];
-                                                                                  console.log(contentDOM);
+                                                                                  // console.log(contentDOM);
                                                                                 break;
                                                                                 }      
                                                                         }else{
-                                                                           console.log(2)
+                                                                           // console.log(2)
                                                                             var parent_node;
                                                                             nodeTemp = nodes[i].parentNode; 
                                                                             while(true){
-
+                                                                                 if(skip_node(nodes[i])){
+                                                                                  nodeTemp = nodeTemp.parentNode;
+                                                                                    continue;
+                                                                                 }
                                                                                 if(nodeTemp.hasAttribute('class') && (nodeTemp.className != "")){
                                                                                          parent_node = nodeTemp;
-                                                                                          console.log(parent_node);
+                                                                                          // console.log(parent_node);
                                                                                          break;
                                                                                         }
                                                                                         
@@ -200,19 +221,19 @@ window.get_first_string = function(str){
                                                                              }
                                                                              parent_tag_name = parent_node.nodeName.toLowerCase();
                                                                              parent_class_name  = parent_node.className.toLowerCase();
-                                                                             console.log(parent_tag_name);
-                                                                             console.log(parent_tagName);
-                                                                             console.log(parent_class_name);
-                                                                             console.log(parent_className);
+                                                                             // console.log(parent_tag_name);
+                                                                             // console.log(parent_tagName);
+                                                                             // console.log(parent_class_name);
+                                                                             // console.log(parent_className);
                                                                              
                                                                              if(parent_tag_name == 'body'){
                                                                                  contentDOM = nodes[i];
-                                                                                  console.log(contentDOM);
+                                                                                  // console.log(contentDOM);
                                                                                 break;s
                                                                              }
                                                                             if((parent_tag_name == parent_tagName) && (parent_class_name == parent_className)){
                                                                                  contentDOM = nodes[i];
-                                                                                  console.log(contentDOM);
+                                                                                  // console.log(contentDOM);
                                                                                 break;
                                                                             }
                                                                         }
@@ -227,13 +248,59 @@ window.get_first_string = function(str){
 
                                                     }//End for
 
+                                                    
 
-                                                  
+
+                                                  // console.log(contentDOM);
 
                                                     return {title:title,contentDOM: contentDOM};
 
                                             } //End scrape_get_dom_js
     
+
+
+
+
+
+
+    window.get_category_dom = function(response,category_tag,category_class){
+                                  var xmlString = response
+                                  , parser = new DOMParser()
+                                  , doc = parser.parseFromString(xmlString, "text/html");
+
+                                                      
+                                      var contentDOM = false;                                                    
+                                      var nodes = doc.body.querySelectorAll('*');
+
+                                       for(var i = 0;i < nodes.length;i++){
+                                                    if(skip_node(nodes[i])){
+                                                          // console.log(nodes[i]);
+                                                            continue;
+                                                         }
+
+                                                        tag_name = nodes[i].nodeName.toLowerCase();
+                                                        //console.log(tag_name)
+
+                                                        if(nodes[i].hasAttribute('class') && (nodes[i].className != '')){                                                            
+                                                             class_name = nodes[i].className.toLowerCase();
+                                                              if ((tag_name == category_tag) && (class_name == category_class)){
+                                                                contentDOM = nodes[i];
+                                                                break;
+                                                              }
+                                                             
+
+                                                      }                                       
+                                       } 
+
+                                       if(contentDOM == false){
+                                        return response;
+                                       }
+
+
+
+          return contentDOM;
+
+    }
     
     
 

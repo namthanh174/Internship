@@ -1,11 +1,36 @@
+
+    
+
 jQuery(document).ready(function($) {
 
 
+    
+                // if($('#input_secret_key').val() != ''){
+
+                //           $.ajax({
+                //                 type:'POST',
+                //                 url: ajaxurl,              
+                //                 data:{
+                //                     action: 'check_session',                            
+                //                 },                      
+                //                 success:function(data){
+                //                      console.log(1)
+                //                     if(data == 'completed'){
+                //                         $('#s3_setting').attr('hidden',false);
+                //                         $('#choose_category').attr('disabled',false);
+                //                         $('#aws_upload_enable').attr('disabled',false);
+                //                     }
+                //                 }
+                        
+                //         });  
+                // }         
+            
+
     $('#define_url').prop('required',true);
-     $('#define_title').prop('required',true);
-      $('#define_first_content').prop('required',true);
-       $('#define_last_content').prop('required',true);
-$('#url_one').prop('required',true);
+    $('#define_title').prop('required',true);
+    $('#define_first_content').prop('required',true);
+    $('#define_last_content').prop('required',true);
+    $('#url_one').prop('required',true);
 
 
     $('#tabs').tabs();

@@ -23,6 +23,8 @@
 
 
                             <form action='' method='POST' id='scrape-one-form'>
+                            <?php // settings_fields( 'scrape_options' ); ?>
+                            <?php // do_settings_sections('scrape_options'); ?>
 
            <table class="form-table">
            <tr> <th width="150"><h4><?php esc_attr_e( 'URL: ', 'wp_admin_style' ); ?></h4></th>
@@ -35,8 +37,8 @@
             
              <!-- <h3>Choose Post Status</h3> -->
             <td>        
-                <input type="radio" name="choose_scrape" id="choose_one_aritcle" class="choose_one_aritcle" value="one" checked="checked" />Scrape one article &nbsp;
-                <input type="radio" name="choose_scrape" id="choose_category" class="choose_category" value="multi" /> Scrape category
+                <input type="radio" name="choose_scrape" id="choose_one_aritcle" class="choose_one_aritcle" value="one" checked="checked" />Scrape one article <br /><br />
+                <input type="radio" name="choose_scrape" id="choose_category" class="choose_category" value="multi" <?php echo $choose_category; ?> /> Scrape category
             
             </td>
             
@@ -50,13 +52,40 @@
             
              <!-- <h3>Choose Post Status</h3> -->
             <td>        
-                <input type="radio" name="choose_status" class="choose_draft" value="draft" checked="checked" /> Draft &nbsp;
+                <input type="radio" name="choose_status" class="choose_draft" value="draft" checked="checked" /> Draft <br /><br />
                 <input type="radio" name="choose_status" class="choose_publish" value="publish" /> Published<br>
                 
             
             </td>
             
             </tr>
+
+            <tr>
+               <th><h4><?php esc_attr_e( 'Choose Upload Images :', 'wp_admin_style' ); ?></h4></th>
+            
+             <!-- <h3>Choose Post Status</h3> -->
+            <td>        
+                <input type="radio" name="upload_enable" id='wp_upload_enable' value="wp_upload_enable" checked="checked" /> WP media <br /><br />
+                <input type="radio" name="upload_enable" id="aws_upload_enable"  value="aws_upload_enable"  <?php echo $choose_aws_s3; ?> /> AWS S3 Bucket
+                
+            
+            </td>
+            
+            </tr>
+
+            <tr>
+               <th><h4><?php esc_attr_e( 'Remove Links :', 'wp_admin_style' ); ?></h4></th>
+            
+             <!-- <h3>Choose Post Status</h3> -->
+            <td>        
+                <input type="checkbox" name="remove_link" id="remove_link" value="checked"  /> Remove Link
+                
+            
+            </td>
+            
+            </tr>
+
+
 
             </table>
 

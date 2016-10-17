@@ -18,11 +18,14 @@
  */
 
 function scrape_activate() {
-    add_option('upload_enable', '', '', 'yes');
-    add_option('remove_link', '', '', 'yes');
+    // add_option('upload_enable', '', '', 'yes');
+    // add_option('remove_link', '', '', 'yes');
     add_option('s3_name', '', '', 'yes');
     add_option('s3_key_id', '', '', 'yes');
     add_option('s3_secret_key', '', '', 'yes');
+    add_option('license', '', '', 'yes');
+    add_option('secret_key', '', '', 'yes');
+    add_option('isProVersion', '', '', 'yes');
 }
 
 register_activation_hook(__FILE__, 'scrape_activate');
@@ -63,12 +66,198 @@ register_activation_hook(__FILE__, 'scrape_activate');
 //----  END  -------------/
 
 
+//Set session for Pro Version of Plugin
+
+add_action('init','register_session');
+add_action('wp_logout', 'myEndSession');
+add_action('wp_login', 'myEndSession');
+
+
+function register_session(){
+    if( !session_id() )
+        session_start();
+
+    if(get_option('license') != null && get_option('secret_key') != null ){
+       
+        
+        $data = array('license'=>get_option('license'),
+            'secret_key'=>get_option('secret_key'),
+            'domain'=> $_SERVER['HTTP_HOST']
+            );
+
+            $data_string = json_encode($data);
+
+            $token = create_token($data);
+             $_SESSION['token'] = $token;
+            $_SESSION['license'] = get_option('license');
+        // if(check_license_api($data) == 'true'){
+        //     $_SESSION['license'] = get_option('license');
+        // }
+    }
+}
+
+    add_action('wp_ajax_check_api', 'check_api');
+    function check_api(){
+
+        //echo $_SESSION['token'];exit();
+         $data = array('license'=>get_option('license'),
+            'secret_key'=>get_option('secret_key'),
+            'domain'=> $_SERVER['HTTP_HOST']
+            );
+            
+            
+             $data_string = json_encode(array('token'=>$_SESSION['token'],'license'=>get_option('license')));
+
+            // $api_url = 'efe.com.vn/thanh_vo/api-db/check_license_api.php/escraper_license/'.$license;
+            // $result = CallAPI('POST', $api_url, $data_string );
+
+
+         $api_url = 'efe.com.vn/thanh_vo/api-db/s3_setting.php/escraper_license/'.$license;
+         $result = CallAPI('POST', $api_url, $data_string );
+            if($result === false){
+                echo 'success';exit();
+            }
+           
+             print_r($result);exit();
+
+    }
+
+
+
+function myEndSession() {
+    $_SESSION['token'] = '';
+    session_destroy();
+}
+
+
+
+
+//Delete license
+add_action('wp_ajax_check_session', 'check_session');
+function check_session(){
+   if(isset($_SESSION['license'])){
+    echo 'completed';exit();
+   }
+
+
+    
+}
+
+
+
+
+function create_token($data){
+        $data_string = json_encode($data);
+
+        $api_url = 'efe.com.vn/thanh_vo/api-db/create_token.php/escraper_license/';
+        $result = CallAPI('POST', $api_url, $data_string );
+        return $result;
+    
+}
+
+ 
+
+
+
+function check_license_api($data){
+     
+        $data_string = json_encode($data);
+
+        $api_url = 'efe.com.vn/thanh_vo/api-db/check_license_api.php/escraper_license/'.$license;
+        $result = CallAPI('POST', $api_url, $data_string );
+        return $result;
+}
+
+
+
+
+
+add_action('wp_ajax_check_license_ajax', 'check_license_ajax');
+function check_license_ajax(){
+    if(isset($_POST['license'])){
+        $license = $_POST['license'];
+        $secret_key = $_POST['secret_key'];
+        $domain = $_POST['domain_register'];
+
+        $data = array('license'=>$license,
+                       'secret_key' => $secret_key,
+                       'domain' => $domain);
+
+
+
+        $data_string = json_encode($data);
+
+        $api_url = 'efe.com.vn/thanh_vo/api-db/license_api.php/escraper_license/'.$license;
+        $result = CallAPI('POST', $api_url, $data_string );
+
+
+        
+        // if($result == null){
+        //     echo "Error";exit();
+        // }
+        // $result = json_decode($result);
+
+        // //Get title pattern from database
+        // $server_secret_key = $result->secret_key;   
+        // echo json_encode(array('data'=>$result));exit();
+        
+        if($result == 'true'){
+             $_SESSION['token'] = create_token($data);
+            update_option('isProVersion','true');
+            $option = get_option('license');
+            echo json_encode(array('data'=>$data_string,'option'=>$option));exit();
+        }else{
+            echo json_encode(array('error'=>'License in valid'));exit();
+        }
+
+
+
+
+
+
+
+
+
+
+        echo json_encode(array('check'=>$result));exit();
+    }
+}
+
+
+//Delete license
+add_action('wp_ajax_delete_license', 'delete_license');
+function delete_license(){
+    // delete_option('license', '', '', 'yes');
+    // delete_option('secret_key', '', '', 'yes');
+    update_option('license', '');
+    update_option('secret_key', '');
+    update_option('isProVersion', '');
+    $_SESSION['token'] = '';
+
+    echo 'completed';exit();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //Insert pattern of Url to Database
 add_action('wp_ajax_insert_scrape_pattern_table', 'insert_scrape_pattern_table');
 
 function insert_scrape_pattern_table() {
-    global $wpdb;
+    // global $wpdb;
 
     if (isset($_POST['define_url'])) {
         $define_url = $_POST['define_url'];
@@ -146,8 +335,8 @@ function insert_scrape_pattern_table() {
  */
 
 function scrape_deactivate() {
-    delete_option('upload_enable', '', '', 'yes');
-    delete_option('remove_link', '', '', 'yes');
+    // delete_option('upload_enable', '', '', 'yes');
+    // delete_option('remove_link', '', '', 'yes');
     delete_option('s3_name', '', '', 'yes');
     delete_option('s3_key_id', '', '', 'yes');
     delete_option('s3_secret_key', '', '', 'yes');
@@ -164,18 +353,19 @@ register_deactivation_hook(__FILE__, 'scrape_deactivate');
 
 if (is_admin()) {
     add_action('admin_menu', 'scrape_admin_page');
-    add_action('admin_init', 'scrape_settings');
+    // add_action('admin_init', 'scrape_settings');
     add_action('admin_init', 's3_settings');
+    add_action('admin_init', 'license_pro_settings');
 }
 
 function scrape_admin_page() {
     add_menu_page('E-Scraper', 'E-Scraper', 'activate_plugins', 'wp-scraper-admin', 'wp_scrape_layout');
 }
 
-function scrape_settings() {
-    register_setting('scrape_options', 'upload_enable');
-    register_setting('scrape_options', 'remove_link');
-}
+// function scrape_settings() {
+//     register_setting('scrape_options', 'upload_enable');
+//     register_setting('scrape_options', 'remove_link');
+// }
 
 function s3_settings() {
     register_setting('s3_options', 's3_name');
@@ -183,7 +373,20 @@ function s3_settings() {
     register_setting('s3_options', 's3_secret_key');
 }
 
+function license_pro_settings(){
+    register_setting('license_pro_options', 'license');
+    register_setting('license_pro_options', 'secret_key');
+    register_setting('license_pro_options','isProVersion');
+}
+
 function wp_scrape_layout() {
+
+    if(get_option('isProVersion') != 'true'){
+         $choose_category = 'disabled';
+        $choose_aws_s3 = 'disabled';
+        $choose_s3_setting = 'hidden';
+
+    }
 
     $args = array("hide_empty" => 0,
         "type" => "post",
@@ -201,8 +404,8 @@ function wp_scrape_layout() {
         <ul>
             <li><a href="#scrape_one" class="title_scrape">Scrape And Post</a></li>
             <li><a href="#define_pattern" class="title_scrape">Define The Pattern From URL</a></li>
-            <li><a href="#s3-setting" class="title_scrape">S3 Setting</a></li>
-            <li><a href="#settings" class="title_scrape">Settings</a></li>
+            <li><a href="#s3-setting" id='s3_setting' class="title_scrape" <?php echo $choose_s3_setting; ?> >S3 Setting</a></li>
+            <!-- <li><a href="#settings" class="title_scrape">Settings</a></li> -->
             <li><a href="#up_pro" class="title_scrape">Upgrade to PRO Version</a></li>
         </ul>
         <div id="scrape_one">
@@ -214,9 +417,9 @@ function wp_scrape_layout() {
         <div id="s3-setting">
     <?php require('inc/templates/s3-setting.php'); ?>
         </div>
-        <div id="settings">
-    <?php require('inc/templates/scrape_settings.php'); ?>
-        </div>
+        <!-- <div id="settings">
+    <?php  //require('inc/templates/scrape_settings.php'); ?>
+        </div> -->
         <div id="up_pro">
     <?php require('inc/templates/upgrade_pro.php'); ?>
         </div>
@@ -371,14 +574,27 @@ function scrape_raw_content_ajax() {
     header('Access-Control-Allow-Origin: *');
     
     if (isset($_GET['url'])) { 
-        $url = trim($_GET['url']);      
+        $url = trim($_GET['url']); 
+        $scrape_category = $_GET['scrape_category']; 
+        $define_url = $_GET['define_url'];
         
         $content = url_get_contents($url);
-
+        // echo json_encode(array('token'=>$_SESSION['token']));exit();
         if($content == false){
             echo 'error';exit();
         }
        
+
+        if($scrape_category == 1){
+            $pattern_category = get_define_category($define_url);
+            if($pattern_category == false){
+                echo false;exit();
+            }
+            echo json_encode(array('content'=>$content,'pattern_category'=>$pattern_category));
+            exit();
+
+        }
+
         echo $content;exit();
         
         
@@ -386,6 +602,27 @@ function scrape_raw_content_ajax() {
 }
 
 
+
+function get_define_category($define_url){
+
+            $data = array('license'=>get_option('license'),
+                        'token'=>$_SESSION['token'],
+                        'define_url' => $define_url
+                );
+            $data_string = json_encode($data);
+
+            $api_url = 'efe.com.vn/thanh_vo/api-db/get_define_category.php';        
+            $pattern_category = CallAPI('POST', $api_url, $data_string );
+            if($pattern_category == 'error'){
+                return false;
+            }
+
+
+             preg_match('/(?P<name>\w+).(?P<class>(.*))/', $pattern_category, $content_pattern_matches);
+            $category_pattern_tagName =  strtolower($content_pattern_matches['name']);
+            $category_pattern_className = strtolower($content_pattern_matches['class']); 
+            return array('category_tag'=>$category_pattern_tagName,'category_class'=>$category_pattern_className);
+}
 
 
 
@@ -473,6 +710,8 @@ function scrape_post_content_ajax(){
     $post_title = $_POST['title'];
     $category_id = $_POST['type'];
     $post_status = $_POST['post_status'];
+    $choose_upload_img = $_POST['choose_upload_img'];
+    $remove_link  = $_POST['remove_link'];
 
 
     $post_content = $page;
@@ -483,17 +722,37 @@ function scrape_post_content_ajax(){
     
     $list_img_link = array_filter($image_urls);
 
-    if (get_option('remove_link') == "checked") {
+    if ($remove_link == "checked") {
         $post_content = remove_link_href($post_content);
     }
     //Upload Image to AWS S3 Amazon
-    if (get_option('upload_enable') == 'aws_upload_enable') {
-        require(plugin_dir_path(__FILE__) . "inc/upload_s3.php");
-        $list_s3 = upload_s3($list_img_link);
+    if ($choose_upload_img == 'aws_upload_enable') {
+         // require(plugin_dir_path(__FILE__) . "inc/upload_s3.php");
+         // $list_s3 = upload_s3($list_img_link);
+            // 'secret_key'=>get_option('secret_key'),
+            // 'domain'=> $_SERVER['HTTP_HOST'],
+
+        $key_s3 = trim(get_option('s3_key_id'));    
+        $secret = trim(get_option('s3_secret_key'));
+        $bucket_name = trim(get_option('s3_name'));
+        $data = array('license'=>get_option('license'),
+            'token'=>$_SESSION['token'],
+            'list_images'=>$list_img_link,
+            'key_s3'=>$key_s3,
+            'secret'=>$secret,
+            'bucket_name'=>$bucket_name
+            );
+        $data_string = json_encode($data);
+
+        $api_url = 'efe.com.vn/thanh_vo/api-db/s3_setting.php/escraper_license/'.$license;        
+        $list_s3 = CallAPI('POST', $api_url, $data_string );
+        $list_s3 = json_decode($list_s3);
+        // print_r($list_s3);exit();
+        
         $post_content = str_replace("amp;", "", $post_content);
         $post_content = str_replace($list_img_link, $list_s3, $post_content);
 
-        //echo json_encode(array('links'=>$list_img_link));exit();
+        
     }
 
     //Insert Post
@@ -513,7 +772,7 @@ function scrape_post_content_ajax(){
 
         //Upload to Wordpress media
 
-        if (get_option('upload_enable') == 'wp_upload_enable') {
+        if ($choose_upload_img == 'wp_upload_enable') {
             //Insert Images to WP Media
             $wp_attach_image_urls = upload_wp_media($list_img_link, $post_id);
 
@@ -525,6 +784,16 @@ function scrape_post_content_ajax(){
             );
             $post_update_id = wp_update_post($my_post_update);
         } else {
+            // $image_url_feature = '';
+            // $num = 0;
+            // while(true){
+            //     if($list_img_link[$num] != null ){
+            //         $image_url_feature = $list_img_link[$num];
+            //         break;
+            //     }
+            //     $num +=1;
+            // }
+             
             $attach_id = set_feature_image($list_img_link[0], $post_id);
             set_post_thumbnail($post_id, $attach_id);
         }
@@ -537,7 +806,7 @@ function scrape_post_content_ajax(){
 function set_feature_image($image_url, $post_id) {
 
     $upload_dir = wp_upload_dir();
-    $image_data = url_get_contents($image_url);
+    $image_data = file_get_contents($image_url);
     $image_url = check_url_image($image_url);
 
     $filename = basename($image_url);
@@ -594,7 +863,7 @@ function upload_wp_media($image_urls, $post_id) {
 }
 
 function check_url_image($image_url) {
-    if ($image_url != "") {
+    if (strpos($image_url, '%')) {
         $image_url = str_replace('%', '', $image_url);
     }
     if (strpos($image_url, '?')) {
