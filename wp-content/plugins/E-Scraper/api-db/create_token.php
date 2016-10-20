@@ -11,11 +11,20 @@ $input = json_decode(file_get_contents('php://input'),true);
 $license = $input['license'];
 $secret_key = $input['secret_key'];
 $domain = $input['domain'];
+ 
+
+// $license = 'ES58049E787D74A';
+// $secret_key = 'zS$b)ekMMx2@qnR&y#56W73TrpoWW+_p@ZlS9xfjcTB%l*qa*YIQH!k';
+// $domain = 'localhost:8080';
 
 
+// echo $license;
+// echo $secret_key;
+// echo $domain;exit();
 
+// $test = $_REQUEST['test'];
 
-
+// echo $license;exit();
 
 // connect to the mysql database
 $user = 'efe36702_dev';
@@ -41,7 +50,7 @@ $table = preg_replace('/[^a-z0-9_]+/i','',array_shift($request));
 
  
 
-$sql = "select * from `$table`".($key?" WHERE license='$license'":''); 
+$sql = "select * from `$table` WHERE license='$license'"; 
  
 // excecute SQL statement
 $result = mysqli_query($link,$sql);
@@ -55,7 +64,7 @@ $obj = mysqli_fetch_object($result);
 
  // echo $domain;exit();
 if(check_license_pro($secret_key,$obj->secret_key,$domain,$obj->domain)){
-
+  
   $token = array();
   $token['id'] = 'ES'.$obj->license;
   

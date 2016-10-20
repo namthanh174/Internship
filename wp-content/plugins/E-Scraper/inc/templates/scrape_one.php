@@ -1,4 +1,11 @@
+<?php 
+ $s3_require = '';
+ 
+    if(get_option('s3_name') == ''){
+        $s3_require = "   (<span style='color:blue;'>Please Enter Your AWS S3 Authentication to use this feature.</span>)";
+    }
 
+?>
 
 <div class="wrap">
 
@@ -38,7 +45,7 @@
              <!-- <h3>Choose Post Status</h3> -->
             <td>        
                 <input type="radio" name="choose_scrape" id="choose_one_aritcle" class="choose_one_aritcle" value="one" checked="checked" />Scrape one article <br /><br />
-                <input type="radio" name="choose_scrape" id="choose_category" class="choose_category" value="multi" <?php echo $choose_category; ?> /> Scrape category
+                <input type="radio" name="choose_scrape" id="choose_category" class="choose_category" value="multi" <?php echo $choose_category; ?> /> Scrape category <?php echo $pro_msg; ?>
             
             </td>
             
@@ -66,7 +73,7 @@
              <!-- <h3>Choose Post Status</h3> -->
             <td>        
                 <input type="radio" name="upload_enable" id='wp_upload_enable' value="wp_upload_enable" checked="checked" /> WP media <br /><br />
-                <input type="radio" name="upload_enable" id="aws_upload_enable"  value="aws_upload_enable"  <?php echo $choose_aws_s3; ?> /> AWS S3 Bucket
+                <input type="radio" name="upload_enable" id="aws_upload_enable"  value="aws_upload_enable"  <?php echo $choose_aws_s3; ?> /> AWS S3 Bucket <?php echo $pro_msg; echo $s3_require; ?>
                 
             
             </td>

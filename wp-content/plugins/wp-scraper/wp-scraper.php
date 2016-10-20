@@ -3,123 +3,88 @@
  * @package WP Scraper
  * @version 4.1  */
 /*
-Plugin Name: WP Scraper
-Plugin URI:  http://www.wpscraper.com
-Description: This plugin allows you to copy content from websites directly to your WordPress posts.
-Version: 4.1
-Author: Allyson Rico, Robert Macchi
-*/
+  Plugin Name: WP Scraper
+  Plugin URI:  http://www.wpscraper.com
+  Description: This plugin allows you to copy content from websites directly to your WordPress posts.
+  Version: 4.1
+  Author: Allyson Rico, Robert Macchi
+ */
 
-define( 'WPSF_DIR', untrailingslashit( dirname( __FILE__ ) ) );
+define('WPSF_DIR', untrailingslashit(dirname(__FILE__)));
 
 
-if ( is_admin() ) {
-    add_action( 'admin_menu', 'WpScraper::wp_scraper_menu');
-	add_action( 'admin_menu', 'wpsf_edit_admin_menus' );
+if (is_admin()) {
+    add_action('admin_menu', 'WpScraper::wp_scraper_menu');
+    add_action('admin_menu', 'wpsf_edit_admin_menus');
 }
 
-add_action( 'admin_enqueue_scripts', 'wpsf_admin_enqueue_scripts' );
+add_action('admin_enqueue_scripts', 'wpsf_admin_enqueue_scripts');
 
 function wpsf_edit_admin_menus() {
-	global $submenu;
+    global $submenu;
 
-	if ( current_user_can( 'activate_plugins' ) ) {
-		$submenu['wp-scraper'][0][0] = 'Single Scrape';
-	}
+    if (current_user_can('activate_plugins')) {
+        $submenu['wp-scraper'][0][0] = 'Single Scrape';
+    }
 }
-
 
 class WpScraper {
 
-private static $templateVariables;
-
+    private static $templateVariables;
     // post url
     public static $url;
-	
     // post html
     public static $html;
-	
     // post images
     public static $images;
-	
-	
-/**
- * Register WP Scraper Menu
- */
- 
- public static function wp_scraper_menu($action='') {
+
+    /**
+     * Register WP Scraper Menu
+     */
+    public static function wp_scraper_menu($action = '') {
         // Main menu block
-        $action = (isset($_GET['action']) && (!empty($_GET['action'])))?$_GET['action']:'add';
-		
-		add_menu_page( 'WP Scraper Single Selection',
-            'WP Scraper',
-            'activate_plugins', 'wp-scraper',
-            'WpScraper::wp_scraper_page', 'dashicons-layout', '11.952144500145214' );
-		
-		$wp_scraper_subpage3 = add_submenu_page(
-        'wp-scraper',
-        'WP Scraper Live Scrape',
-        'Live Scrape',
-        'activate_plugins',
-		'wp-scraper-live-menu',
-        'WpScraper::wp_scraper_live_page');
-		
-		$wp_scraper_subpage = add_submenu_page(
-        'wp-scraper',
-        'WP Scraper Multiple Selection',
-        'Multiple Scrape',
-        'activate_plugins',
-		'wp-scraper-url-menu',
-        'wp_scraper_url_page'); 
-		
-		$wp_scraper_subpage1 = add_submenu_page(
-        'null',
-        'WP Scraper Url',
-        'Multiple Scrape2',
-        'activate_plugins',
-		'wp-scraper-add-menu',
-        'WpScraper::wp_scraper_page'); 
-		
-		$wp_scraper_subpage3 = add_submenu_page(
-        'null',
-        'WP Scraper Results',
-        'Multiple Scrape3',
-        'activate_plugins',
-		'wp-scraper-results-menu',
-        'wp_scraper_results_page');  
-		
-		$wp_scraper_subpage2 = add_submenu_page(
-        'wp-scraper',
-        'WP Scraper Help',
-        'Help',
-        'activate_plugins',
-		'wp-scraper-help-menu',
-        'wp_scraper_help_page'); 
-		
-		$path = 'wp-scraper'.($action?'&action='.$action:'');
-		
-		$the_page = isset($_GET['page'])?$_GET['page']:null;
-		
-		if($the_page != 'wp-scraper') return;
+        $action = (isset($_GET['action']) && (!empty($_GET['action']))) ? $_GET['action'] : 'add';
 
-		$function = 'wp_scraper_'.$action.'_content';
-		WpScraper::$templateVariables = WpScraper::$function();
-        
+        add_menu_page('WP Scraper Single Selection', 'WP Scraper', 'activate_plugins', 'wp-scraper', 'WpScraper::wp_scraper_page', 'dashicons-layout', '11.952144500145214');
 
+        $wp_scraper_subpage3 = add_submenu_page(
+                'wp-scraper', 'WP Scraper Live Scrape', 'Live Scrape', 'activate_plugins', 'wp-scraper-live-menu', 'WpScraper::wp_scraper_live_page');
+
+        $wp_scraper_subpage = add_submenu_page(
+                'wp-scraper', 'WP Scraper Multiple Selection', 'Multiple Scrape', 'activate_plugins', 'wp-scraper-url-menu', 'wp_scraper_url_page');
+
+        $wp_scraper_subpage1 = add_submenu_page(
+                'null', 'WP Scraper Url', 'Multiple Scrape2', 'activate_plugins', 'wp-scraper-add-menu', 'WpScraper::wp_scraper_page');
+
+        $wp_scraper_subpage3 = add_submenu_page(
+                'null', 'WP Scraper Results', 'Multiple Scrape3', 'activate_plugins', 'wp-scraper-results-menu', 'wp_scraper_results_page');
+
+        $wp_scraper_subpage2 = add_submenu_page(
+                'wp-scraper', 'WP Scraper Help', 'Help', 'activate_plugins', 'wp-scraper-help-menu', 'wp_scraper_help_page');
+
+        $path = 'wp-scraper' . ($action ? '&action=' . $action : '');
+
+        $the_page = isset($_GET['page']) ? $_GET['page'] : null;
+
+        if ($the_page != 'wp-scraper')
+            return;
+
+        $function = 'wp_scraper_' . $action . '_content';
+        WpScraper::$templateVariables = WpScraper::$function();
     }
-	
-	public static function wp_scraper_live_page() {
-		echo '<div class="wrap wpsf-form">';
-			echo '<h2>Add a Live Scrape (Available in the Pro Version)</h2>
+
+    public static function wp_scraper_live_page() {
+        echo '<div class="wrap wpsf-form">';
+        echo '<h2>Add a Live Scrape (Available in the Pro Version)</h2>
 				<p>The Live Scrape allows you to add scraped content that will automatically refresh on a recurring cron schedule. This feature is only available with the Pro version of WP Scraper Pro at <a href="http://wpscraper.com" target="_blank">wpscraper.com</a>. With live scrape you can add ratings, reviews, scores, ranking, and so much more!</p>
 				<form method="post" id="wpsf-add-post-form" class="live-form">
-					<input type="hidden" value="'.menu_page_url('wp-scraper-live-menu', false).'" id="wpsf-content-redirect-url"  disabled="disabled"/>
-					<input type="hidden" value="'.wp_scraper_url('wp-scraper', 'auto').'" id="wpsf-content-auto-url" disabled="disabled"/>
-					<input type="hidden" value="'.wp_scraper_url('wp-scraper', 'extract').'" id="wpsf-content-extractor-url" disabled="disabled"/>
-					<input type="hidden" value="'.wp_scraper_url('wp-scraper', 'updatecss').'" id="wpsf-update-css-url" disabled="disabled" />';
-					//<input type="hidden" value="'.wp_scraper_url('wp-scraper', 'downloader').'" id="wpsf-downloader-url" disabled="disabled"/>
-					wp_nonce_field( 'wpsf-save-wpscraper'); 
-					echo '<div id="wpsf-add-source-form-container" class="metabox-holder">
+					<input type="hidden" value="' . menu_page_url('wp-scraper-live-menu', false) . '" id="wpsf-content-redirect-url"  disabled="disabled"/>
+					<input type="hidden" value="' . wp_scraper_url('wp-scraper', 'auto') . '" id="wpsf-content-auto-url" disabled="disabled"/>
+					<input type="hidden" value="' . wp_scraper_url('wp-scraper', 'extract') . '" id="wpsf-content-extractor-url" disabled="disabled"/>
+					<input type="hidden" value="' . wp_scraper_url('wp-scraper', 'updatecss') . '" id="wpsf-update-css-url" disabled="disabled" />';
+        //<input type="hidden" value="'.wp_scraper_url('wp-scraper', 'downloader').'" id="wpsf-downloader-url" disabled="disabled"/>
+        wp_nonce_field('wpsf-save-wpscraper');
+        echo '<div id="wpsf-add-source-form-container" class="metabox-holder">
 						<div id="wpsf-extractor-box">
 							<label for="wpsf-url"><b>Url to Scrape:</b></label>
 							<div class="field wpsf-field-container">
@@ -141,7 +106,7 @@ private static $templateVariables;
 									<input class="wpsf-selector" type="text" name="live_selector" value="" id="live_selector" disabled="disabled"/>
 									<div id="choose_live">
 									<a class="thickbox button block-select-btn" title="Click to select content you want to use for the live content. Then click the button below to add it to the post content field." id="choose_live_content">Choose Live Content</a></div>';
-										echo '<div id="wpsf-html"></div>
+        echo '<div id="wpsf-html"></div>
 									</div>
 									<label>Inline CSS</label>
 									<p class="description">Optionally add your own css code that will be added to the live scrape. A wrapping div with the id "#wpsp-live" will be added around your content.</p>
@@ -188,101 +153,101 @@ private static $templateVariables;
 						<div class="save-wpscraper-form">
 							<input id="live_submit" type="submit" class="button-primary" name="save" value="Create Live Scrape" disabled="disabled"/>
 						</div>';
-						echo '</div>
+        echo '</div>
 					</div>
 					</div>
 				</form>
-				<div style="text-align: center; width: 100%;padding-top: 20px;clear:both;"><a href="http://wpscraper.com" target="_blank"><img style="max-width: 100%;" src="'.plugins_url( "images/live-scrape-a.jpg", __FILE__ ).'" /></a></div>
+				<div style="text-align: center; width: 100%;padding-top: 20px;clear:both;"><a href="http://wpscraper.com" target="_blank"><img style="max-width: 100%;" src="' . plugins_url("images/live-scrape-a.jpg", __FILE__) . '" /></a></div>
 			</div>';
-		
-	}
+    }
 
-	
-	public static function wp_scraper_page($vars = array(), $page='wp-scraper', $template=null) {
-		add_thickbox();
-		require_once('includes/meta-boxes.php');
-		//add_meta_box( 'submitdiv', __( 'Publish' ), 'post_submit_meta_box', 'toplevel_page_wp-scraper', 'side', 'core' );
-		add_meta_box( 'categorydiv', __( 'Categories' ), 'wpsf_post_categories_meta_box', 'toplevel_page_wp-scraper', 'side', 'core' );
-		add_meta_box( 'tagsdiv-post_tag', __( 'Tags' ), 'wpsf_post_tags_meta_box', 'toplevel_page_wp-scraper', 'side', 'core' );
-		add_meta_box( 'postimagediv', __( 'Featured Image' ), 'wpsf_post_thumbnail_meta_box', 'toplevel_page_wp-scraper', 'side', 'core' );
+    public static function wp_scraper_page($vars = array(), $page = 'wp-scraper', $template = null) {
+        add_thickbox();
+        require_once('includes/meta-boxes.php');
+        //add_meta_box( 'submitdiv', __( 'Publish' ), 'post_submit_meta_box', 'toplevel_page_wp-scraper', 'side', 'core' );
+        add_meta_box('categorydiv', __('Categories'), 'wpsf_post_categories_meta_box', 'toplevel_page_wp-scraper', 'side', 'core');
+        add_meta_box('tagsdiv-post_tag', __('Tags'), 'wpsf_post_tags_meta_box', 'toplevel_page_wp-scraper', 'side', 'core');
+        add_meta_box('postimagediv', __('Featured Image'), 'wpsf_post_thumbnail_meta_box', 'toplevel_page_wp-scraper', 'side', 'core');
         if (!$template) {
-            $template = (isset($_GET['action']) && !empty($_GET['action']))?$_GET['action']:'add';
+            $template = (isset($_GET['action']) && !empty($_GET['action'])) ? $_GET['action'] : 'add';
         }
-		if (isset($_GET['page'])) {
-			$this_page = $_GET['page'];
-		}
-		
-		if(isset($_POST['url_list']) || $this_page == 'wp-scraper-add-menu') {
-			if(!$_POST['url_list']) { 
-				echo '<div id="message" class="error notice">
+        if (isset($_GET['page'])) {
+            $this_page = $_GET['page'];
+        }
+
+        if (isset($_POST['url_list']) || $this_page == 'wp-scraper-add-menu') {
+            if (!$_POST['url_list']) {
+                echo '<div id="message" class="error notice">
 					<p>
 					Something went wrong. Your list of urls wasn\'t sent. Please go back and try again. Thank you.
 					</p>
-				</div>';}
-			//print('<pre>'.print_r($_POST,true).'</pre>');
-			$url_list = $_POST['url_list'];
-			$url_list = trim($url_list);
-			$url_list = explode(',', $url_list);
-			
-			global $wpdb;
-			$meta_key = 'wpsm';
-			$limit = $wpdb->get_var( $wpdb->prepare( 
-				"
+				</div>';
+            }
+            //print('<pre>'.print_r($_POST,true).'</pre>');
+            $url_list = $_POST['url_list'];
+            $url_list = trim($url_list);
+            $url_list = explode(',', $url_list);
+
+            global $wpdb;
+            $meta_key = 'wpsm';
+            $limit = $wpdb->get_var($wpdb->prepare(
+                            "
 					SELECT count(meta_value) 
 					FROM $wpdb->postmeta 
 					WHERE meta_key = %s
-				", 
-				$meta_key
-			) );
-			update_option( 'wpscraper_mlimit', $limit );
-			$new_limit = 10 - $limit;
-			$next_limit = $limit + 1;
-			$url_count = count($url_list);
-			if ($new_limit <= 0 ) {
-				$url_list = array_slice($url_list, 0, 1);
-				$url_list[] = 'sliced';
-				$url_list1 = implode(', ', $url_list);
-			} elseif ($url_count > $new_limit) {
-				$url_list = array_slice($url_list, 0, $new_limit);
-				$url_list[] = 'sliced';
-				$url_list1 = implode(', ', $url_list);
-			} else {
-				$url_list1 = implode(', ', $url_list);
-			}
-			
-			if (!$vars || !count($vars)) {
-            $vars = WpScraper::$templateVariables;
-			//$temp_dump = print_r(WpScraper::$templateVariables, true);
-			}
-			if (isset($vars)) {
-				extract($vars);
-			}
-			if ($template == 'add') {
-				$post_type_options = '';
-				$args = array(
-				   'public'   => true,
-				);
-				foreach ( get_post_types( $args, 'names' ) as $post_type ) {
-				   if ($post_type == 'attachment') continue;
-				   if ($post_type == 'post') {
-					   $selected = 'selected="selected"';
-				   } else $selected = '';
-				   $post_type_options .= '<option value="'.$post_type.'"'.$selected.'>' . ucfirst($post_type) . '</p>';
-				}
-				echo '<div class="wrap wpsf-form">';
-			echo '<h2>Add Multiple Scraped Posts</h2>
-				<form method="post" action="'.admin_url().'admin.php?page=wp-scraper-results-menu" id="wpsf-add-multi-post-form"  enctype="multipart/form-data">
-					<input type="hidden" value="'.$url_list1.'" id="wpsf-url-list" name="wpsf-url-list" />
-					<input type="hidden" value="'.wp_scraper_url('wp-scraper', 'auto').'" id="wpsf-content-auto-url" />
-					<input type="hidden" value="'.wp_scraper_url('wp-scraper', 'extract').'" id="wpsf-content-extractor-url" />
+				", $meta_key
+                    ));
+            update_option('wpscraper_mlimit', $limit);
+            $new_limit = 10 - $limit;
+            $next_limit = $limit + 1;
+            $url_count = count($url_list);
+            if ($new_limit <= 0) {
+                $url_list = array_slice($url_list, 0, 1);
+                $url_list[] = 'sliced';
+                $url_list1 = implode(', ', $url_list);
+            } elseif ($url_count > $new_limit) {
+                $url_list = array_slice($url_list, 0, $new_limit);
+                $url_list[] = 'sliced';
+                $url_list1 = implode(', ', $url_list);
+            } else {
+                $url_list1 = implode(', ', $url_list);
+            }
+
+            if (!$vars || !count($vars)) {
+                $vars = WpScraper::$templateVariables;
+                //$temp_dump = print_r(WpScraper::$templateVariables, true);
+            }
+            if (isset($vars)) {
+                extract($vars);
+            }
+            if ($template == 'add') {
+                $post_type_options = '';
+                $args = array(
+                    'public' => true,
+                );
+                foreach (get_post_types($args, 'names') as $post_type) {
+                    if ($post_type == 'attachment')
+                        continue;
+                    if ($post_type == 'post') {
+                        $selected = 'selected="selected"';
+                    } else
+                        $selected = '';
+                    $post_type_options .= '<option value="' . $post_type . '"' . $selected . '>' . ucfirst($post_type) . '</p>';
+                }
+                echo '<div class="wrap wpsf-form">';
+                echo '<h2>Add Multiple Scraped Posts</h2>
+				<form method="post" action="' . admin_url() . 'admin.php?page=wp-scraper-results-menu" id="wpsf-add-multi-post-form"  enctype="multipart/form-data">
+					<input type="hidden" value="' . $url_list1 . '" id="wpsf-url-list" name="wpsf-url-list" />
+					<input type="hidden" value="' . wp_scraper_url('wp-scraper', 'auto') . '" id="wpsf-content-auto-url" />
+					<input type="hidden" value="' . wp_scraper_url('wp-scraper', 'extract') . '" id="wpsf-content-extractor-url" />
 					<input type="hidden" value="true" id="wpsf_is_mult" />
-					<input type="hidden" value="'.$next_limit.'" id="wpsf-limit" name="limit" />
-					<input type="hidden" value="'.wp_scraper_url('wp-scraper', 'downloader').'" id="wpsf-downloader-url" />';
-					wp_nonce_field( 'wpsf-save-wpscraper'); 
-					echo '<div id="wpsf-add-source-form-container" class="metabox-holder">
+					<input type="hidden" value="' . $next_limit . '" id="wpsf-limit" name="limit" />
+					<input type="hidden" value="' . wp_scraper_url('wp-scraper', 'downloader') . '" id="wpsf-downloader-url" />';
+                wp_nonce_field('wpsf-save-wpscraper');
+                echo '<div id="wpsf-add-source-form-container" class="metabox-holder">
 						<div id="wpsf-extractor-box" style="display:none">
 							<div class="field wpsf-field-container">
-								<input id="wpsf-url" class="regular-text ltr" name="url" value="'.$url_list[0].'" />
+								<input id="wpsf-url" class="regular-text ltr" name="url" value="' . $url_list[0] . '" />
 							</div>
 						</div>
 						<div id="add_wpsf_post_container">
@@ -300,9 +265,9 @@ private static $templateVariables;
 								<div class="inside">
 									<div class="field wpsf-field-container">
 									<input class="wpsf-selector" type="text" name="body_selector" value="" id="body_selector" /><div id="choose_body"><a id="choose_body_content" title="Click to select content you want to use for the post content. Then click the button below to add it to the post content field." href="#TB_inline?width=600&height=550&inlineId=content-extractor" class="thickbox button block-select-btn">Choose Post Content</a></div>';
-									add_action('media_buttons_context', 'wpsf_body_button');
-									wp_editor( '', 'wpsf-html', array('media_buttons'=> false) );
-										echo '<input type="hidden" id="wpsf-images" name="images" />
+                add_action('media_buttons_context', 'wpsf_body_button');
+                wp_editor('', 'wpsf-html', array('media_buttons' => false));
+                echo '<input type="hidden" id="wpsf-images" name="images" />
 									</div>
 								</div>
 							</div>
@@ -329,7 +294,7 @@ private static $templateVariables;
 							</a>
 							<div id="post-type-select" class="hide-if-js" style="display: none;">
 							<input id="hidden_post_type" type="hidden" value="post" name="hidden_post_type">
-							<select id="post_type" name="post_type">'.$post_type_options.'</select>
+							<select id="post_type" name="post_type">' . $post_type_options . '</select>
 							<a class="save-post-type hide-if-no-js button" href="#post_type">OK</a>
 							<a class="cancel-post-type hide-if-no-js button-cancel" href="#post_type">Cancel</a>
 							</div>
@@ -389,8 +354,8 @@ private static $templateVariables;
 							<label class="misc-pub-section" for="fix" style="display: inline-block"><input id="fix" type="checkbox" name="fix" value="1">Add Prefix and Suffix to all titles</label>
 							</div>
 						</div>';
-						do_meta_boxes('toplevel_page_wp-scraper', 'side', '');
-						echo '</div>
+                do_meta_boxes('toplevel_page_wp-scraper', 'side', '');
+                echo '</div>
 					</div>
 					</div>
 				</form>
@@ -402,60 +367,61 @@ private static $templateVariables;
 				<iframe id="content-extractor-iframe" name="wpsf-extractor"></iframe>
 			</div>
 			<div class="overlay-loading" style="display:none;"></div>';
-				} elseif ($template == 'extract') {
-					if ($page) : 
-						echo $page; 
-					else:
-						echo '<p>Error loading page</p>';
-					endif;
-				} elseif ($template == 'auto') {
-					if ($page) : 
-						echo $page; 
-					else:
-						echo '<p>Error loading page</p>';
-					endif;
-				}
-				
-		} else {
+            } elseif ($template == 'extract') {
+                if ($page) :
+                    echo $page;
+                else:
+                    echo '<p>Error loading page</p>';
+                endif;
+            } elseif ($template == 'auto') {
+                if ($page) :
+                    echo $page;
+                else:
+                    echo '<p>Error loading page</p>';
+                endif;
+            }
+        } else {
 
-        if (!$vars || !count($vars)) {
-            $vars = WpScraper::$templateVariables;
-        }
-        if (isset($vars)) {
-            extract($vars);
-        }
-		if ($template == 'add') {
-			$post_type_options = '';
-			$args = array(
-			   'public'   => true,
-			);
-			foreach ( get_post_types( $args, 'names' ) as $post_type ) {
-			   if ($post_type == 'attachment') continue;
-			   if ($post_type == 'post') {
-				   $selected = 'selected="selected"';
-			   } else $selected = '';
-			   $post_type_options .= '<option value="'.$post_type.'"'.$selected.'>' . ucfirst($post_type) . '</p>';
-			}
-			echo '<div id="post-body" class="wrap wpsf-form">';
-	if(isset($_GET['pid'])) {
-		$pid = $_GET['pid'];
-	$view = get_permalink($pid);
-	$edit = get_edit_post_link($pid);
-    echo '<div id="message" class="updated notice is-dismissible">
+            if (!$vars || !count($vars)) {
+                $vars = WpScraper::$templateVariables;
+            }
+            if (isset($vars)) {
+                extract($vars);
+            }
+            if ($template == 'add') {
+                $post_type_options = '';
+                $args = array(
+                    'public' => true,
+                );
+                foreach (get_post_types($args, 'names') as $post_type) {
+                    if ($post_type == 'attachment')
+                        continue;
+                    if ($post_type == 'post') {
+                        $selected = 'selected="selected"';
+                    } else
+                        $selected = '';
+                    $post_type_options .= '<option value="' . $post_type . '"' . $selected . '>' . ucfirst($post_type) . '</p>';
+                }
+                echo '<div id="post-body" class="wrap wpsf-form">';
+                if (isset($_GET['pid'])) {
+                    $pid = $_GET['pid'];
+                    $view = get_permalink($pid);
+                    $edit = get_edit_post_link($pid);
+                    echo '<div id="message" class="updated notice is-dismissible">
         <p>
 		Post created
-		<a style="padding-left: 5px;" target="_blank" href="'.$view.'">View Post</a>
-		<a style="padding-left: 5px;" target="_blank" class="post-edit-link" href="'.$edit.'">Edit Post</a>
+		<a style="padding-left: 5px;" target="_blank" href="' . $view . '">View Post</a>
+		<a style="padding-left: 5px;" target="_blank" class="post-edit-link" href="' . $edit . '">Edit Post</a>
 		</p>
     </div>';
-	}
-    echo '<h2>Add New Scraped Post</h2>
+                }
+                echo '<h2>Add New Scraped Post</h2>
 
-    <form method="post" action="'.wp_scraper_url('wp-scraper', 'add').'" id="wpsf-add-post-form">
-        <input type="hidden" value="'.wp_scraper_url('wp-scraper', 'extract').'" id="wpsf-content-extractor-url" />
-		<input type="hidden" value="'.wp_scraper_url('wp-scraper', 'downloader').'" id="wpsf-downloader-url" />';
-        wp_nonce_field( 'wpsf-save-wpscraper'); 
-        echo '<div id="wpsf-add-source-form-container" class="metabox-holder">
+    <form method="post" action="' . wp_scraper_url('wp-scraper', 'add') . '" id="wpsf-add-post-form">
+        <input type="hidden" value="' . wp_scraper_url('wp-scraper', 'extract') . '" id="wpsf-content-extractor-url" />
+		<input type="hidden" value="' . wp_scraper_url('wp-scraper', 'downloader') . '" id="wpsf-downloader-url" />';
+                wp_nonce_field('wpsf-save-wpscraper');
+                echo '<div id="wpsf-add-source-form-container" class="metabox-holder">
 			<div id="wpsf-extractor-box">
                 <label for="wpsf-url"><b>Url to Scrape:</b></label>
 				<div class="field wpsf-field-container">
@@ -475,9 +441,9 @@ private static $templateVariables;
 					
                     <div class="inside">
                         <div class="field wpsf-field-container">';
-						add_action('media_buttons_context', 'wpsf_body_button');
-                        wp_editor( '', 'wpsf-html' );
-                            echo '<input type="hidden" id="wpsf-images" name="images" />
+                add_action('media_buttons_context', 'wpsf_body_button');
+                wp_editor('', 'wpsf-html');
+                echo '<input type="hidden" id="wpsf-images" name="images" />
                         </div>
                     </div>
                 </div>
@@ -505,7 +471,7 @@ private static $templateVariables;
 				</a>
 				<div id="post-type-select" class="hide-if-js" style="display: none;">
 				<input id="hidden_post_type" type="hidden" value="post" name="hidden_post_type">
-				<select id="post_type" name="post_type">'.$post_type_options.'</select>
+				<select id="post_type" name="post_type">' . $post_type_options . '</select>
 				<a class="save-post-type hide-if-no-js button" href="#post_type">OK</a>
 				<a class="cancel-post-type hide-if-no-js button-cancel" href="#post_type">Cancel</a>
 				</div>
@@ -564,8 +530,8 @@ private static $templateVariables;
 				<label class="misc-pub-section" for="add_copy" style="display: inline-block"><input id="add_copy" type="checkbox" name="add_copy" value="add" checked="checked">Add source link to the content</label>
 				</div>
 			</div>';
-			do_meta_boxes('toplevel_page_wp-scraper', 'side', '');
-			echo '</div>
+                do_meta_boxes('toplevel_page_wp-scraper', 'side', '');
+                echo '</div>
         </div>
         </div>
     </form>
@@ -575,325 +541,326 @@ private static $templateVariables;
 	<a id="wpsf-select-html" class="button-primary">Add selected content to my post</a>
     <iframe id="content-extractor-iframe" name="wpsf-extractor"></iframe>
 </div>';
-		} elseif ($template == 'extract') {
-			if ($page) : 
-    			echo $page; 
-			else:
-		    	echo '<p>Error loading page</p>';
-			endif;
-		} elseif ($template == 'auto') {
-			if ($page) : 
-    			echo $page; 
-			else:
-		    	echo '<p>Error loading page</p>';
-			endif;
-		}
-		}
+            } elseif ($template == 'extract') {
+                if ($page) :
+                    echo $page;
+                else:
+                    echo '<p>Error loading page</p>';
+                endif;
+            } elseif ($template == 'auto') {
+                if ($page) :
+                    echo $page;
+                else:
+                    echo '<p>Error loading page</p>';
+                endif;
+            }
+        }
         //include(WPSF_DIR.'/templates/'.$template.'.phtml');
     }
-	
-	public static function wp_scraper_add_content(){
+
+    public static function wp_scraper_add_content() {
         $data = $_POST;
-        if (isset($data['_wpnonce'])) unset($data['_wpnonce']);
-        if (isset($data['_wp_http_referer'])) unset($data['_wp_http_referer']);
-		
-		if(isset($data['limit'])) {
-			$limit = $data['limit'];
-			$limited = true;
-		} else $limited = false;
-		
-		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+        if (isset($data['_wpnonce']))
+            unset($data['_wpnonce']);
+        if (isset($data['_wp_http_referer']))
+            unset($data['_wp_http_referer']);
+
+        if (isset($data['limit'])) {
+            $limit = $data['limit'];
+            $limited = true;
+        } else
+            $limited = false;
+
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
             $ajaxRequest = true;
         } else {
             $ajaxRequest = false;
         }
-		
+
         if (!empty($data) && $ajaxRequest) {
-            check_admin_referer( 'wpsf-save-wpscraper' );
-		
-				if (isset($data['url']) && $data['url']) {
-					WpScraper::$url = $data['url'];
-				}
-				
-				if (isset($data['wpsf-html']) && $data['wpsf-html']) {
-					WpScraper::$html = stripslashes($data['wpsf-html']);
-				}
-				
-				if (isset($data['images']) && $data['images']) {
-					WpScraper::$images = $data['images'];
-				}
-				
-				if(isset($data['simpletext'])) {
-					if($data['simpletext'] == 'remove') {
-						$tags = array
-								(
-									'br' => array(),
-									'b' => array(),
-									'em' => array(),
-									'strong' => array(),
-									'mark' => array(),
-									'i' => array(),
-									'u' => array(),
-									'col' => array
-										(
-											'span' => array(),
-										),
-									'colgroup' => array
-										(
-											'span' => array(),
-										),
-									'div' => array(),
-									'h1' => array(),
-									'h2' => array(),
-									'h3' => array(),
-									'h4' => array(),
-									'h5' => array(),
-									'h6' => array(),
-									'img' => array
-										(
-											'alt' => array(),
-											'src' => array(),
-										),
-									'li' => array(),
-									'p' => array(),
-									'span' => array(),
-									'table' => array(),
-									'tbody' => array(),
-									'td' => array
-										(
-											'colspan' => array(),
-											'rowspan' => array(),
-										),
-									'tfoot' => array(),
-									'th' => array
-										(
-											'colspan' => array(),
-											'rowspan' => array(),
-										),
-									'thead' => array(),
-									'tr' => array(),
-									'ul' => array(),
-									'ol' => array(),
-								);
-						WpScraper::$html = wp_kses(WpScraper::$html, $tags);
-					}
-				}
-				
-				if(isset($data['remove_links'])) {
-					if($data['remove_links'] == 'remove') {
-						$tags = wp_kses_allowed_html( 'post' );
-						unset($tags['a']);
-						WpScraper::$html = wp_kses(WpScraper::$html, $tags);
-					}
-				}	
-				
-				$excerpt = wp_strip_all_tags(WpScraper::$html);
-				$excerpt = wp_trim_words($excerpt, 55, ' [...]');
-				
-				$category = '';
-				if (isset($data['post_category'])) {
-					if (!is_array($data['post_category'])) {
-						if (strpos($data['post_category'], ',') == false) {
-							$cat_id = wp_create_category($data['post_category']);
-							$category = array($cat_id);
-						} elseif (strpos($data['post_category'], ',') !== false) {
-							$cats = substr($data['post_category'], 1);
-							$category = explode(',', $cats);
-						}
-					} else $category = $data['post_category'];
-				}
-				
-				$title = $data['title'];
-				
-				if (isset($data['title_prefix'])) {
-					$title = $data['title_prefix'].$title;
-				}
-				
-				if (isset($data['title_suffix'])) {
-					$title = $title.$data['title_suffix'];
-				}
-				
-				$tags = '';
-				if (isset($data['tax_input-post_tag'])) $tags = $data['tax_input-post_tag'];
-				
-				if (isset($data['add_copy'])) {
-					if($data['add_copy'] == 'add') {
-						$curHtml = WpScraper::$html;
-						$copy = '<br><p class="wpss_copy">Content retrieved from: <a href="'.WpScraper::$url.'" target="_blank">'.WpScraper::$url.'</a>.</p>';
-						WpScraper::$html = $curHtml.$copy;	
-					}
-				}
-				
-				$postId = wp_insert_post(
-					array(
-						'post_type' => $data['hidden_post_type'],
-						'post_status' => $data['hidden_post_status'],
-						'post_title' => $title,
-						'post_content' => WpScraper::$html,
-						'post_excerpt' => $excerpt,
-						'post_category' => $category,
-						'tags_input' => $tags
-					)
-				);		
-				
-				if (WpScraper::$images) {
-					$images = explode("\n", WpScraper::$images);
-		
-					foreach ($images as $im) {
-						$origSrc = $src = trim($im);
-		
-						$parts = parse_url($src);
-						if (isset($parts['query']) && $parts['query']) {
-							parse_str($parts['query'], $query);
-							if (isset($query['action']) && ($query['action']=='downloader')) {
-								$src = urldecode($query['url']);
-							}
-						}
-		
-						if (substr($src, 0, 2) == '//') {
-							$src = 'http:'. $src;
-						}
-		
-						// Download to temp folder
-						$tmp = download_url( $src );
-						$file_array = array();
-						$newSrc = '';
-		
-						preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png)/i', $src, $matches);
-						if (isset($matches[0]) && $matches[0]) {
-							$file_array['name'] = basename($matches[0]);
-							$file_array['tmp_name'] = $tmp;
-							if ( is_wp_error( $tmp ) ) {
-								@unlink($file_array['tmp_name']);
-								$file_array['tmp_name'] = '';
-							} else {
-								// do the validation and storage stuff
-								$imageId = media_handle_sideload( $file_array, $postId, '');
-		
-								// If error storing permanently, unlink
-								if ( is_wp_error($imageId) ) {
-									@unlink($file_array['tmp_name']);
-								} else {
-									$newSrc = wp_get_attachment_url($imageId);
-									update_post_meta( $imageId, '_wpsf_parent', $postId );
-								}
-							}
-						} else {
-							@unlink($tmp);
-						}
-		
-						// Replace images url in code
-						if ($newSrc) {
-							WpScraper::$html = str_replace(htmlentities($origSrc), $newSrc, WpScraper::$html);
-						}
-		
-					}
-				} 
-				
-				if($data['featured_image']) {
-				$feat_image = $data['featured_image'];
-				if (is_numeric($feat_image)) {
-					$thumb_id = $feat_image;
-				} else {
-					$origSrc = $src = trim($data['featured_image']);
-	
-					$parts = parse_url($src);
-					if (isset($parts['query']) && $parts['query']) {
-						parse_str($parts['query'], $query);
-						if (isset($query['action']) && ($query['action']=='downloader')) {
-							$src = urldecode($query['url']);
-						}
-					}
-	
-					if (substr($src, 0, 2) == '//') {
-						$src = 'http:'. $src;
-					}
-	
-					// Download to temp folder
-					$tmp = download_url( $src );
-					$file_array = array();
-					$newSrc = '';
-	
-					preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png)/i', $src, $matches);
-					if (isset($matches[0]) && $matches[0]) {
-						$file_array['name'] = basename($matches[0]);
-						$file_array['tmp_name'] = $tmp;
-						if ( is_wp_error( $tmp ) ) {
-							@unlink($file_array['tmp_name']);
-							$file_array['tmp_name'] = '';
-						} else {
-							// do the validation and storage stuff
-							$imageId = media_handle_sideload( $file_array, $postId, '');
-	
-							// If error storing permanently, unlink
-							if ( is_wp_error($imageId) ) {
-								@unlink($file_array['tmp_name']);
-							} else {
-								$newSrc = wp_get_attachment_url($imageId);
-								update_post_meta( $imageId, '_wpsf_parent', $postId );
-								$thumb_id = $imageId;
-							}
-						}
-					} else {
-						@unlink($tmp);
-					}
-		
-				} 
-				} else $thumb_id = '';
-				
+            check_admin_referer('wpsf-save-wpscraper');
 
-                $url = WpScraper::$url;
-				
-				$meta = get_post_meta($postId);
-				foreach ($meta as $key=>$item) {
-					delete_post_meta($postId, $key);
-				}
-				
-				$postId = wp_update_post(
-					array(
-						'ID' => (int) $postId,
-						'post_type' => $data['hidden_post_type'],
-						'post_status' => $data['hidden_post_status'],
-						'post_title' => $title,
-						'post_content' => WpScraper::$html,
-						'post_excerpt' => $excerpt,
-						'post_category' => $category,
-						'tags_input' => $tags
-					)
-				);
-				if ($thumb_id != '') {
-				set_post_thumbnail( $postId, $thumb_id );
-				}
-				
-				if ($limited == true) {	
-					add_post_meta($postId, 'wpsm', $data['limit']);	
-				}
+            if (isset($data['url']) && $data['url']) {
+                WpScraper::$url = $data['url'];
+            }
 
-                $redirect_url = wp_scraper_url('wp-scraper');
-				$response['redirect_url'] = $redirect_url.'&pid='.$postId;
-				$response['pid'] = $postId;
-				$response['view'] = get_permalink($postId);
-				$response['edit'] = get_edit_post_link($postId);
-				$response = preg_replace_callback(
-				'/\\\\u([0-9a-zA-Z]{4})/',
-				function ($matches) {
-					return mb_convert_encoding(pack('H*',$matches[1]),'UTF-8','UTF-16');
-				},
-				json_encode($response)
-				);
-				echo $response;
-        		exit;
-            
+            if (isset($data['wpsf-html']) && $data['wpsf-html']) {
+                WpScraper::$html = stripslashes($data['wpsf-html']);
+            }
+
+            if (isset($data['images']) && $data['images']) {
+                WpScraper::$images = $data['images'];
+            }
+
+            if (isset($data['simpletext'])) {
+                if ($data['simpletext'] == 'remove') {
+                    $tags = array
+                        (
+                        'br' => array(),
+                        'b' => array(),
+                        'em' => array(),
+                        'strong' => array(),
+                        'mark' => array(),
+                        'i' => array(),
+                        'u' => array(),
+                        'col' => array
+                            (
+                            'span' => array(),
+                        ),
+                        'colgroup' => array
+                            (
+                            'span' => array(),
+                        ),
+                        'div' => array(),
+                        'h1' => array(),
+                        'h2' => array(),
+                        'h3' => array(),
+                        'h4' => array(),
+                        'h5' => array(),
+                        'h6' => array(),
+                        'img' => array
+                            (
+                            'alt' => array(),
+                            'src' => array(),
+                        ),
+                        'li' => array(),
+                        'p' => array(),
+                        'span' => array(),
+                        'table' => array(),
+                        'tbody' => array(),
+                        'td' => array
+                            (
+                            'colspan' => array(),
+                            'rowspan' => array(),
+                        ),
+                        'tfoot' => array(),
+                        'th' => array
+                            (
+                            'colspan' => array(),
+                            'rowspan' => array(),
+                        ),
+                        'thead' => array(),
+                        'tr' => array(),
+                        'ul' => array(),
+                        'ol' => array(),
+                    );
+                    WpScraper::$html = wp_kses(WpScraper::$html, $tags);
+                }
+            }
+
+            if (isset($data['remove_links'])) {
+                if ($data['remove_links'] == 'remove') {
+                    $tags = wp_kses_allowed_html('post');
+                    unset($tags['a']);
+                    WpScraper::$html = wp_kses(WpScraper::$html, $tags);
+                }
+            }
+
+            $excerpt = wp_strip_all_tags(WpScraper::$html);
+            $excerpt = wp_trim_words($excerpt, 55, ' [...]');
+
+            $category = '';
+            if (isset($data['post_category'])) {
+                if (!is_array($data['post_category'])) {
+                    if (strpos($data['post_category'], ',') == false) {
+                        $cat_id = wp_create_category($data['post_category']);
+                        $category = array($cat_id);
+                    } elseif (strpos($data['post_category'], ',') !== false) {
+                        $cats = substr($data['post_category'], 1);
+                        $category = explode(',', $cats);
+                    }
+                } else
+                    $category = $data['post_category'];
+            }
+
+            $title = $data['title'];
+
+            if (isset($data['title_prefix'])) {
+                $title = $data['title_prefix'] . $title;
+            }
+
+            if (isset($data['title_suffix'])) {
+                $title = $title . $data['title_suffix'];
+            }
+
+            $tags = '';
+            if (isset($data['tax_input-post_tag']))
+                $tags = $data['tax_input-post_tag'];
+
+            if (isset($data['add_copy'])) {
+                if ($data['add_copy'] == 'add') {
+                    $curHtml = WpScraper::$html;
+                    $copy = '<br><p class="wpss_copy">Content retrieved from: <a href="' . WpScraper::$url . '" target="_blank">' . WpScraper::$url . '</a>.</p>';
+                    WpScraper::$html = $curHtml . $copy;
+                }
+            }
+
+            $postId = wp_insert_post(
+                    array(
+                        'post_type' => $data['hidden_post_type'],
+                        'post_status' => $data['hidden_post_status'],
+                        'post_title' => $title,
+                        'post_content' => WpScraper::$html,
+                        'post_excerpt' => $excerpt,
+                        'post_category' => $category,
+                        'tags_input' => $tags
+                    )
+            );
+
+            if (WpScraper::$images) {
+                $images = explode("\n", WpScraper::$images);
+
+                foreach ($images as $im) {
+                    $origSrc = $src = trim($im);
+
+                    $parts = parse_url($src);
+                    if (isset($parts['query']) && $parts['query']) {
+                        parse_str($parts['query'], $query);
+                        if (isset($query['action']) && ($query['action'] == 'downloader')) {
+                            $src = urldecode($query['url']);
+                        }
+                    }
+
+                    if (substr($src, 0, 2) == '//') {
+                        $src = 'http:' . $src;
+                    }
+
+                    // Download to temp folder
+                    $tmp = download_url($src);
+                    $file_array = array();
+                    $newSrc = '';
+
+                    preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png)/i', $src, $matches);
+                    if (isset($matches[0]) && $matches[0]) {
+                        $file_array['name'] = basename($matches[0]);
+                        $file_array['tmp_name'] = $tmp;
+                        if (is_wp_error($tmp)) {
+                            @unlink($file_array['tmp_name']);
+                            $file_array['tmp_name'] = '';
+                        } else {
+                            // do the validation and storage stuff
+                            $imageId = media_handle_sideload($file_array, $postId, '');
+
+                            // If error storing permanently, unlink
+                            if (is_wp_error($imageId)) {
+                                @unlink($file_array['tmp_name']);
+                            } else {
+                                $newSrc = wp_get_attachment_url($imageId);
+                                update_post_meta($imageId, '_wpsf_parent', $postId);
+                            }
+                        }
+                    } else {
+                        @unlink($tmp);
+                    }
+
+                    // Replace images url in code
+                    if ($newSrc) {
+                        WpScraper::$html = str_replace(htmlentities($origSrc), $newSrc, WpScraper::$html);
+                    }
+                }
+            }
+
+            if ($data['featured_image']) {
+                $feat_image = $data['featured_image'];
+                if (is_numeric($feat_image)) {
+                    $thumb_id = $feat_image;
+                } else {
+                    $origSrc = $src = trim($data['featured_image']);
+
+                    $parts = parse_url($src);
+                    if (isset($parts['query']) && $parts['query']) {
+                        parse_str($parts['query'], $query);
+                        if (isset($query['action']) && ($query['action'] == 'downloader')) {
+                            $src = urldecode($query['url']);
+                        }
+                    }
+
+                    if (substr($src, 0, 2) == '//') {
+                        $src = 'http:' . $src;
+                    }
+
+                    // Download to temp folder
+                    $tmp = download_url($src);
+                    $file_array = array();
+                    $newSrc = '';
+
+                    preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png)/i', $src, $matches);
+                    if (isset($matches[0]) && $matches[0]) {
+                        $file_array['name'] = basename($matches[0]);
+                        $file_array['tmp_name'] = $tmp;
+                        if (is_wp_error($tmp)) {
+                            @unlink($file_array['tmp_name']);
+                            $file_array['tmp_name'] = '';
+                        } else {
+                            // do the validation and storage stuff
+                            $imageId = media_handle_sideload($file_array, $postId, '');
+
+                            // If error storing permanently, unlink
+                            if (is_wp_error($imageId)) {
+                                @unlink($file_array['tmp_name']);
+                            } else {
+                                $newSrc = wp_get_attachment_url($imageId);
+                                update_post_meta($imageId, '_wpsf_parent', $postId);
+                                $thumb_id = $imageId;
+                            }
+                        }
+                    } else {
+                        @unlink($tmp);
+                    }
+                }
+            } else
+                $thumb_id = '';
+
+
+            $url = WpScraper::$url;
+
+            $meta = get_post_meta($postId);
+            foreach ($meta as $key => $item) {
+                delete_post_meta($postId, $key);
+            }
+
+            $postId = wp_update_post(
+                    array(
+                        'ID' => (int) $postId,
+                        'post_type' => $data['hidden_post_type'],
+                        'post_status' => $data['hidden_post_status'],
+                        'post_title' => $title,
+                        'post_content' => WpScraper::$html,
+                        'post_excerpt' => $excerpt,
+                        'post_category' => $category,
+                        'tags_input' => $tags
+                    )
+            );
+            if ($thumb_id != '') {
+                set_post_thumbnail($postId, $thumb_id);
+            }
+
+            if ($limited == true) {
+                add_post_meta($postId, 'wpsm', $data['limit']);
+            }
+
+            $redirect_url = wp_scraper_url('wp-scraper');
+            $response['redirect_url'] = $redirect_url . '&pid=' . $postId;
+            $response['pid'] = $postId;
+            $response['view'] = get_permalink($postId);
+            $response['edit'] = get_edit_post_link($postId);
+            $response = preg_replace_callback(
+                    '/\\\\u([0-9a-zA-Z]{4})/', function ($matches) {
+                return mb_convert_encoding(pack('H*', $matches[1]), 'UTF-8', 'UTF-16');
+            }, json_encode($response)
+            );
+            echo $response;
+            exit;
         }
-        
-	  	return array();
+
+        return array();
     }
-	
-	public static function wp_scraper_extract_content(){
+
+    public static function wp_scraper_extract_content() {
         $request = $_GET;
-        $blockUrl = isset($_GET['blockUrl'])?$_GET['blockUrl']:null;
-		$downloader = isset($_GET['down'])?$_GET['down']:null;
-		$js = isset($_GET['js'])?true:false;
+        $blockUrl = isset($_GET['blockUrl']) ? $_GET['blockUrl'] : null;
+        $downloader = isset($_GET['down']) ? $_GET['down'] : null;
+        $js = isset($_GET['js']) ? true : false;
 
         if ($blockUrl) {
             $blockUrl = trim(urldecode($blockUrl));
@@ -904,150 +871,152 @@ private static $templateVariables;
                 $blockUrl = 'http://' . $blockUrl;
             }
 
-            
-			WpScraper::$url = $blockUrl;
-			
-					
-				try {
-					if (!function_exists('file_get_html')) {
-						require_once(WPSF_DIR.'/includes/simple_html_dom.php');
-					}
-		
-					$parts = parse_url($blockUrl);
-					$domain = $parts['scheme'].'://'.$parts['host'];
-					
-					if (isset($parts['port']) && $parts['port'] && ($parts['port'] != '80')) {
-						$domain .= ':'.$parts['port'];
-					}
-		
-					// Relative path URL
-					$relativeUrl = $domain;
-					if (isset($parts['path']) && $parts['path']) {
-						$pathParts = explode('/', $parts['path']);
-						if (count($pathParts)) {
-							unset($pathParts[count($pathParts)-1]);
-							$relativeUrl = $domain.'/'.implode('/',$pathParts);
-						}
-					}
-		
-					$content = wp_remote_get($blockUrl);
-					if (is_wp_error($content) || ($content['response']['code'] != 200)) {
-						$arrContextOptions=array(
-							"ssl"=>array(
-								"verify_peer"=>false,
-								"verify_peer_name"=>false,
-							),
-							'http'=>array(
-								'ignore_errors' => true,
-								'method'=>"GET",
-								'header'=>"Accept-language: en-US,en;q=0.5\r\n" .
-									"Cookie: foo=bar\r\n" .
-									"User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/600.8.9 (KHTML, like Gecko) Version/8.0.8 Safari/600.8.9\r\n" // i.e. An iPad
-							)
-						);
-						$html = file_get_html($blockUrl, false, stream_context_create($arrContextOptions));
-					} else {
-						$html = str_get_html($content['body']);
-					}
-		
-					if (!$html) return false;
-		
-					if (!$js) {
-						foreach($html->find('script') as $element) {
-							$element->outertext = '';
-						}
-					}
-		
-					// Remove meta
-					foreach($html->find('meta[http-equiv*=refresh]') as $meta) {
-						$meta->outertext = '';
-					}
-		
-					// Remove meta x-frame
-					foreach($html->find('meta[http-equiv*=x-frame-options]') as $meta) {
-						$meta->outertext = '';
-					}
-		
-					// Modify image and CSS URL's adding domain name if needed
-					foreach($html->find('img') as $element) {
-						$src = trim($element->src);
-						
-						if (empty($src)) $src = $src;
-						elseif (strlen($src)>2 && (substr($src, 0, 1) == '/') && ((substr($src, 0, 2) != '//'))) {
-							$src = $domain.$src;
-						} elseif ((substr($src, 0, 4) != 'http') && (substr($src, 0, 2) != '//')) {
-							$src = $relativeUrl .'/'.$src;
-						}
-						
-						$downloader = $downloader?wp_scraper_url('wp-scraper', 'downloader'):'';
-						
-						if ($downloader) {
-							if (strpos($downloader, '?')) {
-								$element->src = $downloader.'&url='.wp_scraper_encodeURIComponent($src);
-							} else {
-								$element->src = $downloader.'?url='.wp_scraper_encodeURIComponent($src);
-							}
-						} else {
-							$element->src = $src;
-						}
-					}
-		
-					// Modify links
-					foreach($html->find('a') as $element) {
-						$href = trim($element->href);
-						if (strlen($href)>2 && (substr($href, 0, 1) == '/') && ((substr($href, 0, 2) != '//'))) {
-							$href = $domain.$href;
-						} elseif (substr($href, 0, 4) != 'http') {
-							$href = $relativeUrl .'/'.$href;
-						}
-						$element->href = $href;
-					}
-		
-					// Replace all styles URL’s
-					foreach($html->find('link') as $element) {
-						$src = trim($element->href);
-						if (strlen($src)>2 && (substr($src, 0, 1) == '/') && ((substr($src, 0, 2) != '//'))) {
-							$src = $domain.$src;
-						} elseif ((substr($src, 0, 4) != 'http') && (substr($src, 0, 2) != '//')) {
-							$src = $relativeUrl .'/'.$src;
-						}
-						$element->href = $src;
-					}
-		
-					// Append our JavaScript and CSS
-					$scripts = '<script type="text/javascript" src="'.includes_url( '/js/jquery/jquery.js' ).'"></script>';
-					$scripts .= '<script type="text/javascript" src="'.plugins_url( 'includes/simpledomselector.js', __FILE__ ).'?'.time().'"></script>';
-					$scripts .= '<script type="text/javascript" src="'.plugins_url( 'includes/wp-scraper-ingest.js', __FILE__ ).'?'.time().'"></script>';
-					$scripts .= '<style type="text/css">.wpscraper-hover {outline: 3px dotted #B2E0F0 !important; opacity: .7 !important;filter: alpha(opacity=70) !important; background-color: #B2E0F0 !important;}.wpscraper-hover-parent {background-color:#B2E0F0 !important;} .wpscraper-hover img {opacity: 0.7 !important; filter: alpha(opacity=70 !important);} .wpscraper-selected {outline: 5px solid #19A3D1 !important;background-color: #4DB8DB !important; opacity: .7 !important;filter: alpha(opacity=70) !important;} .wpscraper-selected-parent {background-color: #4DB8DB !important;} .wpscraper-selected img {opacity: 0.7 !important; filter: alpha(opacity=70) !important;}</style>';
-		
-					$html = str_replace('</body>', $scripts.'</body>', $html);
-		
-					$page = $html;
-				} catch (PicoBlockException $e) {
-					$page = false;
-				}
+
+            WpScraper::$url = $blockUrl;
+
+
+            try {
+                if (!function_exists('file_get_html')) {
+                    require_once(WPSF_DIR . '/includes/simple_html_dom.php');
+                }
+
+                $parts = parse_url($blockUrl);
+                $domain = $parts['scheme'] . '://' . $parts['host'];
+
+                if (isset($parts['port']) && $parts['port'] && ($parts['port'] != '80')) {
+                    $domain .= ':' . $parts['port'];
+                }
+
+                // Relative path URL
+                $relativeUrl = $domain;
+                if (isset($parts['path']) && $parts['path']) {
+                    $pathParts = explode('/', $parts['path']);
+                    if (count($pathParts)) {
+                        unset($pathParts[count($pathParts) - 1]);
+                        $relativeUrl = $domain . '/' . implode('/', $pathParts);
+                    }
+                }
+
+                $content = wp_remote_get($blockUrl);
+                if (is_wp_error($content) || ($content['response']['code'] != 200)) {
+                    $arrContextOptions = array(
+                        "ssl" => array(
+                            "verify_peer" => false,
+                            "verify_peer_name" => false,
+                        ),
+                        'http' => array(
+                            'ignore_errors' => true,
+                            'method' => "GET",
+                            'header' => "Accept-language: en-US,en;q=0.5\r\n" .
+                            "Cookie: foo=bar\r\n" .
+                            "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/600.8.9 (KHTML, like Gecko) Version/8.0.8 Safari/600.8.9\r\n" // i.e. An iPad
+                        )
+                    );
+                    $html = file_get_html($blockUrl, false, stream_context_create($arrContextOptions));
+                } else {
+                    $html = str_get_html($content['body']);
+                }
+
+                if (!$html)
+                    return false;
+
+                if (!$js) {
+                    foreach ($html->find('script') as $element) {
+                        $element->outertext = '';
+                    }
+                }
+
+                // Remove meta
+                foreach ($html->find('meta[http-equiv*=refresh]') as $meta) {
+                    $meta->outertext = '';
+                }
+
+                // Remove meta x-frame
+                foreach ($html->find('meta[http-equiv*=x-frame-options]') as $meta) {
+                    $meta->outertext = '';
+                }
+
+                // Modify image and CSS URL's adding domain name if needed
+                foreach ($html->find('img') as $element) {
+                    $src = trim($element->src);
+
+                    if (empty($src))
+                        $src = $src;
+                    elseif (strlen($src) > 2 && (substr($src, 0, 1) == '/') && ((substr($src, 0, 2) != '//'))) {
+                        $src = $domain . $src;
+                    } elseif ((substr($src, 0, 4) != 'http') && (substr($src, 0, 2) != '//')) {
+                        $src = $relativeUrl . '/' . $src;
+                    }
+
+                    $downloader = $downloader ? wp_scraper_url('wp-scraper', 'downloader') : '';
+
+                    if ($downloader) {
+                        if (strpos($downloader, '?')) {
+                            $element->src = $downloader . '&url=' . wp_scraper_encodeURIComponent($src);
+                        } else {
+                            $element->src = $downloader . '?url=' . wp_scraper_encodeURIComponent($src);
+                        }
+                    } else {
+                        $element->src = $src;
+                    }
+                }
+
+                // Modify links
+                foreach ($html->find('a') as $element) {
+                    $href = trim($element->href);
+                    if (strlen($href) > 2 && (substr($href, 0, 1) == '/') && ((substr($href, 0, 2) != '//'))) {
+                        $href = $domain . $href;
+                    } elseif (substr($href, 0, 4) != 'http') {
+                        $href = $relativeUrl . '/' . $href;
+                    }
+                    $element->href = $href;
+                }
+
+                // Replace all styles URL’s
+                foreach ($html->find('link') as $element) {
+                    $src = trim($element->href);
+                    if (strlen($src) > 2 && (substr($src, 0, 1) == '/') && ((substr($src, 0, 2) != '//'))) {
+                        $src = $domain . $src;
+                    } elseif ((substr($src, 0, 4) != 'http') && (substr($src, 0, 2) != '//')) {
+                        $src = $relativeUrl . '/' . $src;
+                    }
+                    $element->href = $src;
+                }
+
+                // Append our JavaScript and CSS
+                $scripts = '<script type="text/javascript" src="' . includes_url('/js/jquery/jquery.js') . '"></script>';
+                $scripts .= '<script type="text/javascript" src="' . plugins_url('includes/simpledomselector.js', __FILE__) . '?' . time() . '"></script>';
+                $scripts .= '<script type="text/javascript" src="' . plugins_url('includes/wp-scraper-ingest.js', __FILE__) . '?' . time() . '"></script>';
+                $scripts .= '<style type="text/css">.wpscraper-hover {outline: 3px dotted #B2E0F0 !important; opacity: .7 !important;filter: alpha(opacity=70) !important; background-color: #B2E0F0 !important;}.wpscraper-hover-parent {background-color:#B2E0F0 !important;} .wpscraper-hover img {opacity: 0.7 !important; filter: alpha(opacity=70 !important);} .wpscraper-selected {outline: 5px solid #19A3D1 !important;background-color: #4DB8DB !important; opacity: .7 !important;filter: alpha(opacity=70) !important;} .wpscraper-selected-parent {background-color: #4DB8DB !important;} .wpscraper-selected img {opacity: 0.7 !important; filter: alpha(opacity=70) !important;}</style>';
+
+                $html = str_replace('</body>', $scripts . '</body>', $html);
+
+                $page = $html;
+            } catch (PicoBlockException $e) {
+                $page = false;
+            }
         }
 
         WpScraper::wp_scraper_page(
-            array(
-                'page' => $page
-            )
+                array(
+                    'page' => $page
+                )
         );
         exit;
     }
-	
-	public static function wp_scraper_downloader_content(){
+
+    public static function wp_scraper_downloader_content() {
         $request = $_GET;
-        $url = trim(urldecode(isset($_GET['url'])?$_GET['url']:null));
+        $url = trim(urldecode(isset($_GET['url']) ? $_GET['url'] : null));
 
         if (substr($url, 0, 2) == '//') {
-            $url = 'http://'.substr($url,2);
+            $url = 'http://' . substr($url, 2);
         }
 
-        $arrContextOptions=array(
-            "ssl"=>array(
-                "verify_peer"=>false,
-                "verify_peer_name"=>false,
+        $arrContextOptions = array(
+            "ssl" => array(
+                "verify_peer" => false,
+                "verify_peer_name" => false,
             ),
         );
 
@@ -1060,66 +1029,64 @@ private static $templateVariables;
 
 }
 
-
-
 /**
  * Admin enqueue scripts
  */
-function wpsf_admin_enqueue_scripts( $hook ) {
-	
-	if ( $hook == 'toplevel_page_wp-scraper' || $hook == 'admin_page_wp-scraper-add-menu' ){
-		wp_enqueue_media();
-		wp_enqueue_script( 'jquery' );
-		wp_enqueue_style( 'wp-scraper-css', plugins_url( 'wp-scraper.css', __FILE__ ), array(), '', 'all' );
-		wp_enqueue_script( 'wp-scraper-js', plugins_url( 'wp-scraper.js', __FILE__), array( 'jquery' ), '', 'all' );
-		wp_localize_script( 'wp-scraper-js', 'ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
-		wp_enqueue_script('post');
+function wpsf_admin_enqueue_scripts($hook) {
+
+    if ($hook == 'toplevel_page_wp-scraper' || $hook == 'admin_page_wp-scraper-add-menu') {
+        wp_enqueue_media();
+        wp_enqueue_script('jquery');
+        wp_enqueue_style('wp-scraper-css', plugins_url('wp-scraper.css', __FILE__), array(), '', 'all');
+        wp_enqueue_script('wp-scraper-js', plugins_url('wp-scraper.js', __FILE__), array('jquery'), '', 'all');
+        wp_localize_script('wp-scraper-js', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
+        wp_enqueue_script('post');
     }
-	if ( $hook == 'overlay_for_wp-scraper'  ){
-		wp_enqueue_script( 'jquery' );
-        wp_enqueue_script( 'wp-scraper-ingest', plugins_url( 'includes/wp-scraper-ingest.js', __FILE__ ), array( 'jquery' ), '', 'all' );
+    if ($hook == 'overlay_for_wp-scraper') {
+        wp_enqueue_script('jquery');
+        wp_enqueue_script('wp-scraper-ingest', plugins_url('includes/wp-scraper-ingest.js', __FILE__), array('jquery'), '', 'all');
     }
-	if ($hook == 'wp-scraper_page_wp-scraper-url-menu') {
-		wp_enqueue_script( 'wp-scraper-admin-js', plugins_url( 'wp-scraper-admin.js', __FILE__ ), array( 'jquery' ), '', 'all' );
-		wp_localize_script( 'wp-scraper-admin-js', 'ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
-		wp_enqueue_style( 'wp-scraper-css', plugins_url( 'wp-scraper.css', __FILE__ ), array(), '', 'all' );
-	}
-	if ($hook == 'admin_page_wp-scraper-results-menu') {
-		wp_enqueue_script( 'jquery' );
-		wp_enqueue_style( 'wp-scraper-css', plugins_url( 'wp-scraper.css', __FILE__ ), array(), '', 'all' );
-		wp_enqueue_script( 'wp-scraper-js', plugins_url( 'wp-scraper.js', __FILE__), array( 'jquery' ), '', 'all' );
-		wp_enqueue_script( 'wp-scraper-multi-js', plugins_url( 'wp-scraper-multi.js', __FILE__), array( 'jquery' ), '', 'all' );
-		wp_localize_script( 'wp-scraper-multi-js', 'ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );	
-	}
-	if ($hook == 'wp-scraper_page_wp-scraper-live-menu') {
-		wp_enqueue_style( 'wp-scraper-css', plugins_url( 'wp-scraper.css', __FILE__ ), array(), '', 'all' );
-	}
+    if ($hook == 'wp-scraper_page_wp-scraper-url-menu') {
+        wp_enqueue_script('wp-scraper-admin-js', plugins_url('wp-scraper-admin.js', __FILE__), array('jquery'), '', 'all');
+        wp_localize_script('wp-scraper-admin-js', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
+        wp_enqueue_style('wp-scraper-css', plugins_url('wp-scraper.css', __FILE__), array(), '', 'all');
+    }
+    if ($hook == 'admin_page_wp-scraper-results-menu') {
+        wp_enqueue_script('jquery');
+        wp_enqueue_style('wp-scraper-css', plugins_url('wp-scraper.css', __FILE__), array(), '', 'all');
+        wp_enqueue_script('wp-scraper-js', plugins_url('wp-scraper.js', __FILE__), array('jquery'), '', 'all');
+        wp_enqueue_script('wp-scraper-multi-js', plugins_url('wp-scraper-multi.js', __FILE__), array('jquery'), '', 'all');
+        wp_localize_script('wp-scraper-multi-js', 'ajax_object', array('ajax_url' => admin_url('admin-ajax.php')));
+    }
+    if ($hook == 'wp-scraper_page_wp-scraper-live-menu') {
+        wp_enqueue_style('wp-scraper-css', plugins_url('wp-scraper.css', __FILE__), array(), '', 'all');
+    }
 }
 
-function wp_scraper_url($controller, $action='', $params=array()) {
-        
-		$url = menu_page_url( $controller, false );
-		
-        if ($action) {
-            $url = add_query_arg(array( 'action' => $action ), $url);
-        }
+function wp_scraper_url($controller, $action = '', $params = array()) {
 
-        if (count($params)) {
-            $url = add_query_arg($params, $url);
-        }
+    $url = menu_page_url($controller, false);
 
-        return $url;
+    if ($action) {
+        $url = add_query_arg(array('action' => $action), $url);
     }
-	
+
+    if (count($params)) {
+        $url = add_query_arg($params, $url);
+    }
+
+    return $url;
+}
+
 function wp_scraper_encodeURIComponent($str) {
-    $revert = array('%21'=>'!', '%2A'=>'*', '%27'=>"'", '%28'=>'(', '%29'=>')');
+    $revert = array('%21' => '!', '%2A' => '*', '%27' => "'", '%28' => '(', '%29' => ')');
     return strtr(rawurlencode($str), $revert);
 }
 
 /* Generate url page */
 
 function wp_scraper_url_page() {
-	echo '<div class="wrap wpsf-settings">
+    echo '<div class="wrap wpsf-settings">
 	<h1>Url Selection</h1>
 	<p class="description">You can either generate a list of urls or paste a comma separated list of urls inside the box below. Once you have the urls you want to scrape click \'Continue\' at the bottom of the page.</p>
 	<div id="wpsf-generate" class="meta-box-sortables">
@@ -1168,7 +1135,7 @@ function wp_scraper_url_page() {
 	</p></div></div></div>
 	<h3>Webpages to Scrape:</h3>
 	<p class="description">Every url listed in the box below will be used to generate content for your site. Remove any generated urls that you do not want to pull content from.</p>
-	<form id="wpsf-url-submit" action="'.admin_url().'admin.php?page=wp-scraper-add-menu" method="POST" >
+	<form id="wpsf-url-submit" action="' . admin_url() . 'admin.php?page=wp-scraper-add-menu" method="POST" >
 	<textarea id="wpsf-url-list" style="width: 100%; min-height: 300px;" name="url_list"></textarea>
 	<p class="submit">
 	<input id="wpsf-continue-submit" class="button button-primary" type="submit" value="Continue" name="submit">
@@ -1178,72 +1145,73 @@ function wp_scraper_url_page() {
 /* Generate results page */
 
 function wp_scraper_results_page() {
-	if (isset($_POST['wpsf-url-list'])) {
-		$url_list = explode(', ',$_POST['wpsf-url-list']);
-	} else { $url_list = array();}
-	global $wpdb;
-	$meta_key = 'wpsm';
-	$limit = $wpdb->get_var( $wpdb->prepare( 
-		"
+    if (isset($_POST['wpsf-url-list'])) {
+        $url_list = explode(', ', $_POST['wpsf-url-list']);
+    } else {
+        $url_list = array();
+    }
+    global $wpdb;
+    $meta_key = 'wpsm';
+    $limit = $wpdb->get_var($wpdb->prepare(
+                    "
 			SELECT count(meta_value) 
 			FROM $wpdb->postmeta 
 			WHERE meta_key = %s
-		", 
-		$meta_key
-	) );
-	update_option( 'wpscraper_mlimit', $limit );
-	$new_limit = 10 - $limit;
-	$next_limit = $limit + 1;
-	$url_count = count($url_list);
-	if ($new_limit <= 0 ) {
-		$url_list = array_slice($url_list, 0, 1);
-		$url_list[] = 'sliced';
-		$url_list1 = implode(', ', $url_list);
-	} elseif ($url_count > $new_limit) {
-		$url_list = array_slice($url_list, 0, $new_limit);
-		$url_list[] = 'sliced';
-		$url_list1 = implode(', ', $url_list);
-	} else {
-		$url_list1 = implode(', ', $url_list);
-	}
-		
-	echo '<div class="wrap wpsf-settings">
+		", $meta_key
+            ));
+    update_option('wpscraper_mlimit', $limit);
+    $new_limit = 10 - $limit;
+    $next_limit = $limit + 1;
+    $url_count = count($url_list);
+    if ($new_limit <= 0) {
+        $url_list = array_slice($url_list, 0, 1);
+        $url_list[] = 'sliced';
+        $url_list1 = implode(', ', $url_list);
+    } elseif ($url_count > $new_limit) {
+        $url_list = array_slice($url_list, 0, $new_limit);
+        $url_list[] = 'sliced';
+        $url_list1 = implode(', ', $url_list);
+    } else {
+        $url_list1 = implode(', ', $url_list);
+    }
+
+    echo '<div class="wrap wpsf-settings">
 	<div id="wpsf-data" class="loading wpsf-form">
-<form id="wpsf-add-multi-post-form" class="hidden" action="'.wp_scraper_url('wp-scraper', 'add').'">
-		<input type="hidden" value="'.$url_list1.'" id="wpsf-url-list" name="wpsf-url-list" />
-		<input type="hidden" value="'.wp_scraper_url('wp-scraper', 'auto').'" id="wpsf-content-auto-url" />
-		<input type="hidden" value="'.wp_scraper_url('wp-scraper', 'extract').'" id="wpsf-content-extractor-url" />
+<form id="wpsf-add-multi-post-form" class="hidden" action="' . wp_scraper_url('wp-scraper', 'add') . '">
+		<input type="hidden" value="' . $url_list1 . '" id="wpsf-url-list" name="wpsf-url-list" />
+		<input type="hidden" value="' . wp_scraper_url('wp-scraper', 'auto') . '" id="wpsf-content-auto-url" />
+		<input type="hidden" value="' . wp_scraper_url('wp-scraper', 'extract') . '" id="wpsf-content-extractor-url" />
 		<input type="hidden" value="true" id="wpsf_is_mult" />
-		<input type="hidden" value="'.$next_limit.'" id="wpsf-limit" name="limit" />
-		<input type="hidden" id="_wpnonce" name="_wpnonce" value="'.(isset($_POST['_wpnonce'])?$_POST['_wpnonce']:'').'" />
-		<input type="hidden" name="_wp_http_referer" value="'.(isset($_POST['_wp_http_referer'])?$_POST['_wp_http_referer']:'').'" />
-		<input id="wpsf-url" class="regular-text ltr" name="url" value="'.(isset($_POST['url'])?$_POST['url']:'').'" />
-		<input class="wpsf-selector" type="text" name="title_selector" value="'.(isset($_POST['title_selector'])?$_POST['title_selector']:'').'" id="title_selector" />
-		<input type="text" name="title_prefix" size="80" value="'.(isset($_POST['title_prefix'])?$_POST['title_prefix']:'').'" id="title_prefix" spellcheck="true" placeholder="Prefix" />
-		<input type="text" name="title" size="80" value="'.(isset($_POST['title'])?$_POST['title']:'').'" id="title" spellcheck="true" placeholder="Enter post title" />
-		<input type="text" name="title_suffix" size="80" value="'.(isset($_POST['title_suffix'])?$_POST['title_suffix']:'').'" id="title_suffix" spellcheck="true" placeholder="Suffix" />
-		<input class="wpsf-selector" type="text" name="body_selector" value="'.(isset($_POST['body_selector'])?$_POST['body_selector']:'').'" id="body_selector" />
-		<textarea class="wp-editor-area" rows="20" autocomplete="off" cols="40" name="wpsf-html" id="wpsf-html">'.(isset($_POST['wpsf-html'])?$_POST['wpsf-html']:'').'</textarea>
-		<input type="hidden" id="wpsf-images" name="images" value="'.(isset($_POST['images'])?$_POST['images']:'').'" />
-		<input id="hidden_post_type" type="hidden" value="'.(isset($_POST['hidden_post_type'])?$_POST['hidden_post_type']:'').'" name="hidden_post_type">
-		<input id="hidden_post_status" type="hidden" value="'.(isset($_POST['hidden_post_status'])?$_POST['hidden_post_status']:'').'" name="hidden_post_status">
+		<input type="hidden" value="' . $next_limit . '" id="wpsf-limit" name="limit" />
+		<input type="hidden" id="_wpnonce" name="_wpnonce" value="' . (isset($_POST['_wpnonce']) ? $_POST['_wpnonce'] : '') . '" />
+		<input type="hidden" name="_wp_http_referer" value="' . (isset($_POST['_wp_http_referer']) ? $_POST['_wp_http_referer'] : '') . '" />
+		<input id="wpsf-url" class="regular-text ltr" name="url" value="' . (isset($_POST['url']) ? $_POST['url'] : '') . '" />
+		<input class="wpsf-selector" type="text" name="title_selector" value="' . (isset($_POST['title_selector']) ? $_POST['title_selector'] : '') . '" id="title_selector" />
+		<input type="text" name="title_prefix" size="80" value="' . (isset($_POST['title_prefix']) ? $_POST['title_prefix'] : '') . '" id="title_prefix" spellcheck="true" placeholder="Prefix" />
+		<input type="text" name="title" size="80" value="' . (isset($_POST['title']) ? $_POST['title'] : '') . '" id="title" spellcheck="true" placeholder="Enter post title" />
+		<input type="text" name="title_suffix" size="80" value="' . (isset($_POST['title_suffix']) ? $_POST['title_suffix'] : '') . '" id="title_suffix" spellcheck="true" placeholder="Suffix" />
+		<input class="wpsf-selector" type="text" name="body_selector" value="' . (isset($_POST['body_selector']) ? $_POST['body_selector'] : '') . '" id="body_selector" />
+		<textarea class="wp-editor-area" rows="20" autocomplete="off" cols="40" name="wpsf-html" id="wpsf-html">' . (isset($_POST['wpsf-html']) ? $_POST['wpsf-html'] : '') . '</textarea>
+		<input type="hidden" id="wpsf-images" name="images" value="' . (isset($_POST['images']) ? $_POST['images'] : '') . '" />
+		<input id="hidden_post_type" type="hidden" value="' . (isset($_POST['hidden_post_type']) ? $_POST['hidden_post_type'] : '') . '" name="hidden_post_type">
+		<input id="hidden_post_status" type="hidden" value="' . (isset($_POST['hidden_post_status']) ? $_POST['hidden_post_status'] : '') . '" name="hidden_post_status">
 		
-		<input id="simpletext" type="checkbox" name="simpletext" value="remove" '.(isset($_POST['simpletext'])?($_POST['simpletext'] == 'remove' ? 'checked="checked"' : ''):'').'>
-		<input id="remove_links" type="checkbox" name="remove_links" value="remove" '.(isset($_POST['remove_links'])?($_POST['remove_links'] == 'remove' ? 'checked="checked"' : ''):'').'>
-		<input id="add_copy" type="checkbox" name="add_copy" value="add" '.(isset($_POST['add_copy'])?($_POST['add_copy'] == 'add' ? 'checked="checked"' : ''):'').'>
+		<input id="simpletext" type="checkbox" name="simpletext" value="remove" ' . (isset($_POST['simpletext']) ? ($_POST['simpletext'] == 'remove' ? 'checked="checked"' : '') : '') . '>
+		<input id="remove_links" type="checkbox" name="remove_links" value="remove" ' . (isset($_POST['remove_links']) ? ($_POST['remove_links'] == 'remove' ? 'checked="checked"' : '') : '') . '>
+		<input id="add_copy" type="checkbox" name="add_copy" value="add" ' . (isset($_POST['add_copy']) ? ($_POST['add_copy'] == 'add' ? 'checked="checked"' : '') : '') . '>
 		
-    	<input class="wpsf-selector" type="text" name="cat_selector" value="'.(isset($_POST['cat_selector'])?$_POST['cat_selector']:'').'" id="cat_selector" />
+    	<input class="wpsf-selector" type="text" name="cat_selector" value="' . (isset($_POST['cat_selector']) ? $_POST['cat_selector'] : '') . '" id="cat_selector" />
 		
-		<input class="post-category" value="'.(isset($_POST['post_category'])?(is_array($_POST['post_category'])?implode(',',$_POST['post_category']):$_POST['post_category']):'').'" name="post_category" />
+		<input class="post-category" value="' . (isset($_POST['post_category']) ? (is_array($_POST['post_category']) ? implode(',', $_POST['post_category']) : $_POST['post_category']) : '') . '" name="post_category" />
 				
 				
 		
-        <input class="wpsf-selector" type="text" name="tags_selector" value="'.(isset($_POST['tags_selector'])?$_POST['tags_selector']:'').'" id="tags_selector" />
+        <input class="wpsf-selector" type="text" name="tags_selector" value="' . (isset($_POST['tags_selector']) ? $_POST['tags_selector'] : '') . '" id="tags_selector" />
 		
-		<textarea class="the-tags" name="tax_input-post_tag">'.(isset($_POST['tax_input-post_tag'])?$_POST['tax_input-post_tag']:'').'</textarea>
+		<textarea class="the-tags" name="tax_input-post_tag">' . (isset($_POST['tax_input-post_tag']) ? $_POST['tax_input-post_tag'] : '') . '</textarea>
 		
-		<input class="wpsf-selector" type="text" name="fi_selector" value="'.(isset($_POST['fi_selector'])?$_POST['fi_selector']:'').'" id="fi_selector" />
-		<input id="wpsf_featured_image" type="hidden" name="featured_image" value="'.(isset($_POST['featured_image'])?$_POST['featured_image']:'').'" />
+		<input class="wpsf-selector" type="text" name="fi_selector" value="' . (isset($_POST['fi_selector']) ? $_POST['fi_selector'] : '') . '" id="fi_selector" />
+		<input id="wpsf_featured_image" type="hidden" name="featured_image" value="' . (isset($_POST['featured_image']) ? $_POST['featured_image'] : '') . '" />
 		</form>
 	</div>
 	<div id="wpsf-scraper-results" style="display: none;">
@@ -1265,668 +1233,697 @@ function wp_scraper_results_page() {
 </div>';
 }
 
-add_action( 'wp_ajax_wpsf_live_scrape_action', 'wp_scraper_live_scrape_action');
-function wp_scraper_live_scrape_action($url = '', $selector = '', $downloader = ''){
-	$multi = false;
-		if (empty($url) && empty($selector) && empty($downloader)) {
-			if (isset($_REQUEST['url'])) {
-				$url = $_REQUEST['url'];
-			} else die(json_encode(array('message' => 'ERROR', 'code' => 1329)));
-			if (isset($_REQUEST['selector'])) {
-				$selector = $_REQUEST['selector'];
-			} else die(json_encode(array('message' => 'ERROR', 'code' => 1330)));
-			if (isset($_REQUEST['downloader'])) {
-				$downloader = $_REQUEST['downloader'];
-			} else die(json_encode(array('message' => 'ERROR', 'code' => 1331)));
-		} else {$multi = true;}
-		
-set_time_limit(10000);
+add_action('wp_ajax_wpsf_live_scrape_action', 'wp_scraper_live_scrape_action');
 
-if (!function_exists('file_get_html')) {
-	require_once(WPSF_DIR.'/includes/simple_html_dom.php');
+function wp_scraper_live_scrape_action($url = '', $selector = '', $downloader = '') {
+    $multi = false;
+    if (empty($url) && empty($selector) && empty($downloader)) {
+        if (isset($_REQUEST['url'])) {
+            $url = $_REQUEST['url'];
+        } else
+            die(json_encode(array('message' => 'ERROR', 'code' => 1329)));
+        if (isset($_REQUEST['selector'])) {
+            $selector = $_REQUEST['selector'];
+        } else
+            die(json_encode(array('message' => 'ERROR', 'code' => 1330)));
+        if (isset($_REQUEST['downloader'])) {
+            $downloader = $_REQUEST['downloader'];
+        } else
+            die(json_encode(array('message' => 'ERROR', 'code' => 1331)));
+    } else {
+        $multi = true;
+    }
+
+    set_time_limit(10000);
+
+    if (!function_exists('file_get_html')) {
+        require_once(WPSF_DIR . '/includes/simple_html_dom.php');
+    }
+    $lb = "<br/>";
+
+    $url = trim(urldecode($url));
+
+    if (substr($url, 0, 2) == '//') {
+        $url = 'http://' . substr($url, 2);
+    } elseif (substr($url, 0, 4) != 'http') {
+        $url = 'http://' . $url;
+    }
+
+    $parts = parse_url($url);
+    $domain = $parts['scheme'] . '://' . $parts['host'];
+
+    if (isset($parts['port']) && $parts['port'] && ($parts['port'] != '80')) {
+        $domain .= ':' . $parts['port'];
+    }
+
+    // Relative path URL
+    $relativeUrl = $domain;
+    if (isset($parts['path']) && $parts['path']) {
+        $pathParts = explode('/', $parts['path']);
+        if (count($pathParts)) {
+            unset($pathParts[count($pathParts) - 1]);
+            $relativeUrl = $domain . '/' . implode('/', $pathParts);
+        }
+    }
+
+    $content = wp_remote_get($url);
+    if (is_wp_error($content) || ($content['response']['code'] != 200)) {
+        $arrContextOptions = array(
+            "ssl" => array(
+                "verify_peer" => false,
+                "verify_peer_name" => false,
+            ),
+            'http' => array(
+                'ignore_errors' => true,
+                'method' => "GET",
+                'header' => "Accept-language: en-US,en;q=0.5\r\n" .
+                "Cookie: foo=bar\r\n" .
+                "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/600.8.9 (KHTML, like Gecko) Version/8.0.8 Safari/600.8.9\r\n" // i.e. An iPad
+            )
+        );
+        $html = file_get_html($url, false, stream_context_create($arrContextOptions));
+    } else {
+        $html = str_get_html($content['body']);
+    }
+
+    if (!$html)
+        return false;
+
+    // Remove meta
+    foreach ($html->find('meta[http-equiv*=refresh]') as $meta) {
+        $meta->outertext = '';
+    }
+
+    // Remove meta x-frame
+    foreach ($html->find('meta[http-equiv*=x-frame-options]') as $meta) {
+        $meta->outertext = '';
+    }
+
+    // Modify image and CSS URL's adding domain name if needed
+    foreach ($html->find('img') as $element) {
+        $src = trim($element->src);
+        if (strlen($src) > 2 && (substr($src, 0, 1) == '/') && ((substr($src, 0, 2) != '//'))) {
+            $src = $domain . $src;
+        } elseif ((substr($src, 0, 4) != 'http') && (substr($src, 0, 2) != '//')) {
+            $src = $relativeUrl . '/' . $src;
+        }
+
+        if ($downloader != 'false') {
+            if (strpos($downloader, '?')) {
+                $element->src = $downloader . '&url=' . wp_scraper_encodeURIComponent($src);
+            } else {
+                $element->src = $downloader . '?url=' . wp_scraper_encodeURIComponent($src);
+            }
+        } else {
+            $element->src = $src;
+        }
+    }
+
+    // Modify links
+    foreach ($html->find('a') as $element) {
+        $href = trim($element->href);
+        if (strlen($href) > 2 && (substr($href, 0, 1) == '/') && ((substr($href, 0, 2) != '//'))) {
+            $href = $domain . $href;
+        } elseif (substr($href, 0, 4) != 'http') {
+            $href = $relativeUrl . '/' . $href;
+        }
+        $element->href = $href;
+    }
+
+    // Replace all styles URL’s
+    foreach ($html->find('link') as $element) {
+        $src = trim($element->href);
+        if (strlen($src) > 2 && (substr($src, 0, 1) == '/') && ((substr($src, 0, 2) != '//'))) {
+            $src = $domain . $src;
+        } elseif ((substr($src, 0, 4) != 'http') && (substr($src, 0, 2) != '//')) {
+            $src = $relativeUrl . '/' . $src;
+        }
+        $element->href = $src;
+    }
+
+    $return = '';
+    if (strpos($selector, ', ') !== false) {
+        $pieces = explode(', ', $selector);
+    } else
+        $pieces = array($selector);
+    $wrap = false;
+    $j = 0;
+    foreach ($pieces as $p) {
+        $parts = explode(' > ', $p);
+        $i = 0;
+        foreach ($parts as $prt) {
+            if ($i == 0 && strpos($prt, ':eq(') !== false) {
+                $prtArr = explode(":eq(", $prt);
+                $elem = $prtArr[0];
+                $eIndex = rtrim($prtArr[1], ")");
+                $returnElement = $html->find($elem, $eIndex);
+                if ($elem == 'td' || $elem == 'th' || $elem == 'tr') {
+                    $wrap = true;
+                }
+            } elseif ($i == 0 && strpos($prt, ':eq(') == false) {
+                $returnElement = $html->find($prt);
+                if ($prt == 'td' || $prt == 'th' || $prt == 'tr') {
+                    $wrap = true;
+                }
+            } elseif ($i > 0 && strpos($prt, ':eq(') !== false) {
+                $prtArr = explode(":eq(", $prt);
+                $elem = $prtArr[0];
+                $eIndex = rtrim($prtArr[1], ")");
+                $retArray = $returnElement->find($elem);
+                $k = 0;
+                foreach ($retArray as $child) {
+                    if ($child->tag == $elem && $k == $eIndex) {
+                        $returnElement = $child;
+                    }
+                    $k++;
+                }
+                if ($elem == 'td' || $elem == 'th' || $elem == 'tr') {
+                    $wrap = true;
+                }
+            } else {
+                $returnElement = $returnElement->find($prt);
+                if ($prt == 'td' || $prt == 'th' || $prt == 'tr') {
+                    $wrap = true;
+                }
+            }
+            $i++;
+        }
+
+        if ($returnElement == NULL && $multi)
+            $returnElement = "ERROR";
+        if ($wrap == true) {
+            $returnElement = '<div class="tableContent">' . $returnElement . '</div>';
+        }
+        if (!$multi)
+            echo $returnElement;
+        else
+            $return .= $returnElement;
+        $j++;
+    }
+    if (!$multi)
+        wp_die();
+    else
+        return $return;
 }
-$lb = "<br/>";
 
-$url = trim(urldecode($url));
+add_action('wp_ajax_wpsf_multi_scrape_action', 'wp_scraper_multi_scrape_action');
 
-if (substr($url, 0, 2) == '//') {
-	$url = 'http://' . substr($url, 2);
-} elseif (substr($url, 0, 4) != 'http') {
-	$url = 'http://' . $url;
-}
+function wp_scraper_multi_scrape_action() {
+    $data = $_POST;
 
-	$parts = parse_url($url);
-	$domain = $parts['scheme'].'://'.$parts['host'];
+    if (isset($data['limit'])) {
+        $limit = $data['limit'];
+        $limited = true;
+    } else
+        $limited = false;
 
-	if (isset($parts['port']) && $parts['port'] && ($parts['port'] != '80')) {
-		$domain .= ':'.$parts['port'];
-	}
+    if ($data['ThisUrl'] == 'sliced') {
+        return 'sliced';
+    }
 
-	// Relative path URL
-	$relativeUrl = $domain;
-	if (isset($parts['path']) && $parts['path']) {
-		$pathParts = explode('/', $parts['path']);
-		if (count($pathParts)) {
-			unset($pathParts[count($pathParts)-1]);
-			$relativeUrl = $domain.'/'.implode('/',$pathParts);
-		}
-	}
+    if (!function_exists('file_get_html')) {
+        require_once(WPSF_DIR . '/includes/simple_html_dom.php');
+    }
 
-	$content = wp_remote_get($url);
-	if (is_wp_error($content) || ($content['response']['code'] != 200)) {
-		$arrContextOptions=array(
-			"ssl"=>array(
-				"verify_peer"=>false,
-				"verify_peer_name"=>false,
-			),
-			'http'=>array(
-				'ignore_errors' => true,
-				'method'=>"GET",
-				'header'=>"Accept-language: en-US,en;q=0.5\r\n" .
-					"Cookie: foo=bar\r\n" .
-					"User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/600.8.9 (KHTML, like Gecko) Version/8.0.8 Safari/600.8.9\r\n" // i.e. An iPad
-			)
-		);
-		$html = file_get_html($url, false, stream_context_create($arrContextOptions));
-	} else {
-		$html = str_get_html($content['body']);
-	}
+    if ($data['title_selector'] != '') {
+        $data['title'] = wp_scraper_live_scrape_action($data['ThisUrl'], $data['title_selector'], 'false');
+        if ($data['title'] == "ERROR") {
+            return "ERROR";
+        }
+        $data['title'] = strip_tags($data['title']);
+    }
+    if ($data['body_selector'] != '') {
+        $data['wpsf-html'] = wp_scraper_live_scrape_action($data['ThisUrl'], $data['body_selector'], 'false');
+        if ($data['wpsf-html'] == "ERROR") {
+            return "ERROR";
+        }
+    }
+    if ($data['cat_selector'] != '') {
+        $data['post_category'] = wp_scraper_live_scrape_action($data['ThisUrl'], $data['cat_selector'], 'false');
+        if ($data['post_category'] == "ERROR") {
+            return "ERROR";
+        }
+        $data['post_category'] = strip_tags($data['post_category']);
+        $categ = wp_create_category($data['post_category']);
+        $data['post_category'] = array($categ);
+    }
+    if ($data['tags_selector'] != '') {
+        $data['tax_input-post_tag'] = wp_scraper_live_scrape_action($data['ThisUrl'], $data['tags_selector'], 'false');
+        if ($data['tax_input-post_tag'] == "ERROR") {
+            return "ERROR";
+        }
+        $data['tax_input-post_tag'] = strip_tags($data['tax_input-post_tag']);
+    }
+    if ($data['fi_selector'] != '') {
+        $fi = wp_scraper_live_scrape_action($data['ThisUrl'], $data['fi_selector'], 'false');
+        if ($data['fi_selector'] == "ERROR") {
+            return "ERROR";
+        }
+        $fi_html = str_get_html($fi);
+        $data['featured_image'] = $fi_html->find('img', 0)->src;
+    }
+    if (isset($data['_wpnonce']))
+        unset($data['_wpnonce']);
+    if (isset($data['_wp_http_referer']))
+        unset($data['_wp_http_referer']);
 
-	if (!$html) return false;
+    if (!empty($data)) {
 
-	// Remove meta
-	foreach($html->find('meta[http-equiv*=refresh]') as $meta) {
-		$meta->outertext = '';
-	}
+        if (isset($data['ThisUrl'])) {
+            $url = $data['ThisUrl'];
+        }
 
-	// Remove meta x-frame
-	foreach($html->find('meta[http-equiv*=x-frame-options]') as $meta) {
-		$meta->outertext = '';
-	}
+        $html = '';
+        if (isset($data['wpsf-html'])) {
+            $html = $data['wpsf-html'];
+        }
 
-	// Modify image and CSS URL's adding domain name if needed
-	foreach($html->find('img') as $element) {
-		$src = trim($element->src);
-		if (strlen($src)>2 && (substr($src, 0, 1) == '/') && ((substr($src, 0, 2) != '//'))) {
-			$src = $domain.$src;
-		} elseif ((substr($src, 0, 4) != 'http') && (substr($src, 0, 2) != '//')) {
-			$src = $relativeUrl .'/'.$src;
-		}
+        if (isset($data['simpletext'])) {
+            if ($data['simpletext'] == 'remove') {
+                $tags = array
+                    (
+                    'br' => array(),
+                    'b' => array(),
+                    'em' => array(),
+                    'strong' => array(),
+                    'mark' => array(),
+                    'i' => array(),
+                    'u' => array(),
+                    'col' => array
+                        (
+                        'span' => array(),
+                    ),
+                    'colgroup' => array
+                        (
+                        'span' => array(),
+                    ),
+                    'div' => array(),
+                    'h1' => array(),
+                    'h2' => array(),
+                    'h3' => array(),
+                    'h4' => array(),
+                    'h5' => array(),
+                    'h6' => array(),
+                    'img' => array
+                        (
+                        'alt' => array(),
+                        'src' => array(),
+                    ),
+                    'li' => array(),
+                    'p' => array(),
+                    'span' => array(),
+                    'table' => array(),
+                    'tbody' => array(),
+                    'td' => array
+                        (
+                        'colspan' => array(),
+                        'rowspan' => array(),
+                    ),
+                    'tfoot' => array(),
+                    'th' => array
+                        (
+                        'colspan' => array(),
+                        'rowspan' => array(),
+                    ),
+                    'thead' => array(),
+                    'tr' => array(),
+                    'ul' => array(),
+                    'ol' => array(),
+                );
+                $html = wp_kses($html, $tags);
+            }
+        }
 
-		if ($downloader != 'false') {
-			if (strpos($downloader, '?')) {
-				$element->src = $downloader.'&url='.wp_scraper_encodeURIComponent($src);
-			} else {
-				$element->src = $downloader.'?url='.wp_scraper_encodeURIComponent($src);
-			}
-		} else {
-			$element->src = $src;
-		}
-	}
+        if (isset($data['remove_links'])) {
+            if ($data['remove_links'] == 'remove') {
+                $tags = wp_kses_allowed_html('post');
+                unset($tags['a']);
+                $html = wp_kses($html, $tags);
+            }
+        }
 
-	// Modify links
-	foreach($html->find('a') as $element) {
-		$href = trim($element->href);
-		if (strlen($href)>2 && (substr($href, 0, 1) == '/') && ((substr($href, 0, 2) != '//'))) {
-			$href = $domain.$href;
-		} elseif (substr($href, 0, 4) != 'http') {
-			$href = $relativeUrl .'/'.$href;
-		}
-		$element->href = $href;
-	}
+        $excerpt = wp_strip_all_tags($html);
+        $excerpt = wp_trim_words($excerpt, 55, ' [...]');
 
-	// Replace all styles URL’s
-	foreach($html->find('link') as $element) {
-		$src = trim($element->href);
-		if (strlen($src)>2 && (substr($src, 0, 1) == '/') && ((substr($src, 0, 2) != '//'))) {
-			$src = $domain.$src;
-		} elseif ((substr($src, 0, 4) != 'http') && (substr($src, 0, 2) != '//')) {
-			$src = $relativeUrl .'/'.$src;
-		}
-		$element->href = $src;
-	}
+        $category = '';
+        if (isset($data['post_category'])) {
+            if (!is_array($data['post_category'])) {
+                if (strpos($data['post_category'], ',') == false) {
+                    $cat_id = wp_create_category($data['post_category']);
+                    $category = array($cat_id);
+                } elseif (strpos($data['post_category'], ',') !== false) {
+                    $cats = substr($data['post_category'], 1);
+                    $category = explode(',', $cats);
+                }
+            } else
+                $category = $data['post_category'];
+        }
 
-$return = '';
-if (strpos($selector,', ') !== false) {
-	$pieces = explode(', ', $selector);	
-} else $pieces = array($selector);
-$wrap = false;
-$j = 0;
-foreach ($pieces as $p) {
-$parts = explode(' > ', $p);
-$i = 0;
-foreach ($parts as $prt) {
-	if ($i == 0 && strpos($prt, ':eq(') !== false) {
-		$prtArr = explode(":eq(", $prt);
-		$elem = $prtArr[0];
-		$eIndex = rtrim($prtArr[1], ")");
-		$returnElement = $html->find($elem, $eIndex);
-		if ($elem == 'td' || $elem == 'th' || $elem == 'tr') {
-			$wrap = true;
-		}
-	} elseif ($i == 0 && strpos($prt, ':eq(') == false) {
-		$returnElement = $html->find($prt);
-		if ($prt == 'td' || $prt == 'th' || $prt == 'tr') {
-			$wrap = true;
-		}
-	} elseif ($i > 0 && strpos($prt, ':eq(') !== false) {
-		$prtArr = explode(":eq(", $prt);
-		$elem = $prtArr[0];
-		$eIndex = rtrim($prtArr[1], ")");
-		$retArray = $returnElement->find($elem);
-		$k = 0;
-		foreach ($retArray as $child) {
-			if ($child->tag == $elem && $k == $eIndex) {
-				$returnElement = $child;
-			}
-			$k++;
-		}
-		if ($elem == 'td' || $elem == 'th' || $elem == 'tr') {
-			$wrap = true;
-		}
-	} else {
-		$returnElement = $returnElement->find($prt);
-		if ($prt == 'td' || $prt == 'th' || $prt == 'tr') {
-			$wrap = true;
-		}
-	}
-	$i++;
-}
-		
-if ($returnElement == NULL && $multi) $returnElement = "ERROR";
-if ($wrap == true) {
-	$returnElement = '<div class="tableContent">'.$returnElement.'</div>';
-}
-if (!$multi) echo $returnElement;
-else $return .= $returnElement;
-$j++;
-}
-if (!$multi) wp_die();
-else return $return;
-}
+        $title = $data['title'];
 
-add_action( 'wp_ajax_wpsf_multi_scrape_action', 'wp_scraper_multi_scrape_action');
-function wp_scraper_multi_scrape_action(){
-	$data = $_POST;
-	
-	if(isset($data['limit'])) {
-		$limit = $data['limit'];
-		$limited = true;
-	} else $limited = false;
-	
-	if($data['ThisUrl'] == 'sliced') {
-		return 'sliced';
-	}
-	
-	if (!function_exists('file_get_html')) {
-		require_once(WPSF_DIR.'/includes/simple_html_dom.php');
-	}
-	
-	if ($data['title_selector'] != '') {
-		$data['title'] = wp_scraper_live_scrape_action($data['ThisUrl'], $data['title_selector'], 'false');
-		if ($data['title'] == "ERROR") {return "ERROR";}
-		$data['title'] = strip_tags($data['title']);
-	}
-	if ($data['body_selector'] != '') {
-		$data['wpsf-html'] = wp_scraper_live_scrape_action($data['ThisUrl'], $data['body_selector'], 'false');
-		if ($data['wpsf-html'] == "ERROR") {return "ERROR";}
-	}
-	if ($data['cat_selector'] != '') {
-		$data['post_category'] = wp_scraper_live_scrape_action($data['ThisUrl'], $data['cat_selector'], 'false');
-		if ($data['post_category'] == "ERROR") {return "ERROR";}
-		$data['post_category'] = strip_tags($data['post_category']);
-		$categ = wp_create_category($data['post_category']);
-		$data['post_category'] = array($categ);
-	}
-	if ($data['tags_selector'] != '') {
-		$data['tax_input-post_tag'] = wp_scraper_live_scrape_action($data['ThisUrl'], $data['tags_selector'], 'false');
-		if ($data['tax_input-post_tag'] == "ERROR") {return "ERROR";}
-		$data['tax_input-post_tag'] = strip_tags($data['tax_input-post_tag']);
-	}
-	if ($data['fi_selector'] != '') {
-		$fi = wp_scraper_live_scrape_action($data['ThisUrl'], $data['fi_selector'], 'false');
-		if ($data['fi_selector'] == "ERROR") {return "ERROR";}
-		$fi_html = str_get_html($fi);
-		$data['featured_image'] = $fi_html->find('img', 0)->src;
-	}
-	if (isset($data['_wpnonce'])) unset($data['_wpnonce']);
-	if (isset($data['_wp_http_referer'])) unset($data['_wp_http_referer']);
-	
-	if (!empty($data)) {
-	
-			if (isset($data['ThisUrl'])) {
-				$url = $data['ThisUrl'];
-			}
-			
-			$html = '';
-			if (isset($data['wpsf-html'])) {
-				$html = $data['wpsf-html'];
-			}
-			
-			if(isset($data['simpletext'])) {
-				if($data['simpletext'] == 'remove') {
-					$tags = array
-							(
-								'br' => array(),
-								'b' => array(),
-								'em' => array(),
-								'strong' => array(),
-								'mark' => array(),
-								'i' => array(),
-								'u' => array(),
-								'col' => array
-									(
-										'span' => array(),
-									),
-								'colgroup' => array
-									(
-										'span' => array(),
-									),
-								'div' => array(),
-								'h1' => array(),
-								'h2' => array(),
-								'h3' => array(),
-								'h4' => array(),
-								'h5' => array(),
-								'h6' => array(),
-								'img' => array
-									(
-										'alt' => array(),
-										'src' => array(),
-									),
-								'li' => array(),
-								'p' => array(),
-								'span' => array(),
-								'table' => array(),
-								'tbody' => array(),
-								'td' => array
-									(
-										'colspan' => array(),
-										'rowspan' => array(),
-									),
-								'tfoot' => array(),
-								'th' => array
-									(
-										'colspan' => array(),
-										'rowspan' => array(),
-									),
-								'thead' => array(),
-								'tr' => array(),
-								'ul' => array(),
-								'ol' => array(),
-							);
-					$html = wp_kses($html, $tags);
-				}
-			}
-			
-			if(isset($data['remove_links'])) {
-				if($data['remove_links'] == 'remove') {
-					$tags = wp_kses_allowed_html( 'post' );
-					unset($tags['a']);
-					$html = wp_kses($html, $tags);
-				}
-			}
-			
-			$excerpt = wp_strip_all_tags($html);
-			$excerpt = wp_trim_words($excerpt, 55, ' [...]');
-			
-			$category = '';
-			if (isset($data['post_category'])) {
-				if (!is_array($data['post_category'])) {
-					if (strpos($data['post_category'], ',') == false) {
-						$cat_id = wp_create_category($data['post_category']);
-						$category = array($cat_id);
-					} elseif (strpos($data['post_category'], ',') !== false) {
-						$cats = substr($data['post_category'], 1);
-						$category = explode(',', $cats);
-					}
-				} else $category = $data['post_category'];
-			}
-			
-			$title = $data['title'];
-			
-			if (isset($data['title_prefix'])) {
-				$title = $data['title_prefix'].$title;
-			}
-			
-			if (isset($data['title_suffix'])) {
-				$title = $title.$data['title_suffix'];
-			}
-			
-			$tags = '';
-			if (isset($data['tax_input-post_tag'])) $tags = $data['tax_input-post_tag'];
-			
-			if (isset($url) && isset($html)) {
-				if (isset($data['add_copy'])) {
-					if($data['add_copy'] == 'add') {
-						$curHtml = $html;
-						$copy = '<br><p class="wpss_copy">Content retrieved from: <a href="'.$url.'" target="_blank">'.$url.'</a>.</p>';
-						$html = $curHtml.$copy;	
-					}
-				}
-			}
-			
-			$postId = wp_insert_post(
-				array(
-					'post_type' => $data['hidden_post_type'],
-					'post_status' => $data['hidden_post_status'],
-					'post_title' => $title,
-					'post_content' => $html,
-					'post_excerpt' => $excerpt,
-					'post_category' => $category,
-					'tags_input' => $tags
-				)
-			);
-			
-			if ($postId == 0 || !is_numeric($postId)) {
-				return 'post failed '.$postId;
-			}
-			
-			$this_html = str_get_html($html);
-			$imageIds = '';
-			foreach ($this_html->find('img') as $image) {
-				$im = $image->src;
-				$origSrc = $src = trim($im);
-				
-				$parts = parse_url($src);
-				if (isset($parts['query']) && $parts['query']) {
-					parse_str($parts['query'], $query);
-					if (isset($query['action']) && ($query['action']=='downloader')) {
-						$src = urldecode($query['url']);
-					}
-				}
+        if (isset($data['title_prefix'])) {
+            $title = $data['title_prefix'] . $title;
+        }
 
-				if (substr($src, 0, 2) == '//') {
-					$src = 'http:'. $src;
-				}
+        if (isset($data['title_suffix'])) {
+            $title = $title . $data['title_suffix'];
+        }
 
-				// Download to temp folder
-				$tmp = download_url( $src );
-				$file_array = array();
-				$newSrc = '';
+        $tags = '';
+        if (isset($data['tax_input-post_tag']))
+            $tags = $data['tax_input-post_tag'];
 
-				preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png)/i', $src, $matches);
-				if (isset($matches[0]) && $matches[0]) {
-					$file_array['name'] = basename($matches[0]);
-					$file_array['tmp_name'] = $tmp;
-					if ( is_wp_error( $tmp ) ) {
-						@unlink($file_array['tmp_name']);
-						$file_array['tmp_name'] = '';
-					} else {
-						// do the validation and storage stuff
-						$imageId = media_handle_sideload( $file_array, 0, '');
+        if (isset($url) && isset($html)) {
+            if (isset($data['add_copy'])) {
+                if ($data['add_copy'] == 'add') {
+                    $curHtml = $html;
+                    $copy = '<br><p class="wpss_copy">Content retrieved from: <a href="' . $url . '" target="_blank">' . $url . '</a>.</p>';
+                    $html = $curHtml . $copy;
+                }
+            }
+        }
 
-						// If error storing permanently, unlink
-						if ( is_wp_error($imageId) ) {
-							@unlink($file_array['tmp_name']);
-						} else {
-							$newSrc = wp_get_attachment_url($imageId);
-							if($imageIds == '')
-								$imageIds = $imageId;
-							else $imageIds .= ', '.$imageId;
-						}
-					}
-				} else {
-					@unlink($tmp);
-				}
+        $postId = wp_insert_post(
+                array(
+                    'post_type' => $data['hidden_post_type'],
+                    'post_status' => $data['hidden_post_status'],
+                    'post_title' => $title,
+                    'post_content' => $html,
+                    'post_excerpt' => $excerpt,
+                    'post_category' => $category,
+                    'tags_input' => $tags
+                )
+        );
 
-				// Replace images url in code
-				if ($newSrc) {
-					$html = str_replace($origSrc, $newSrc, $html);
-				}
+        if ($postId == 0 || !is_numeric($postId)) {
+            return 'post failed ' . $postId;
+        }
 
-			}
-			
-			if($data['featured_image']) {
-			$feat_image = $data['featured_image'];
-			if (is_numeric($feat_image)) {
-				$thumb_id = $feat_image;
-			} else {
-				$origSrc = $src = trim($data['featured_image']);
+        $this_html = str_get_html($html);
+        $imageIds = '';
+        foreach ($this_html->find('img') as $image) {
+            $im = $image->src;
+            $origSrc = $src = trim($im);
 
-				$parts = parse_url($src);
-				if (isset($parts['query']) && $parts['query']) {
-					parse_str($parts['query'], $query);
-					if (isset($query['action']) && ($query['action']=='downloader')) {
-						$src = urldecode($query['url']);
-					}
-				}
+            $parts = parse_url($src);
+            if (isset($parts['query']) && $parts['query']) {
+                parse_str($parts['query'], $query);
+                if (isset($query['action']) && ($query['action'] == 'downloader')) {
+                    $src = urldecode($query['url']);
+                }
+            }
 
-				if (substr($src, 0, 2) == '//') {
-					$src = 'http:'. $src;
-				}
+            if (substr($src, 0, 2) == '//') {
+                $src = 'http:' . $src;
+            }
 
-				// Download to temp folder
-				$tmp = download_url( $src );
-				$file_array = array();
-				$newSrc = '';
+            // Download to temp folder
+            $tmp = download_url($src);
+            $file_array = array();
+            $newSrc = '';
 
-				preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png)/i', $src, $matches);
-				if (isset($matches[0]) && $matches[0]) {
-					$file_array['name'] = basename($matches[0]);
-					$file_array['tmp_name'] = $tmp;
-					if ( is_wp_error( $tmp ) ) {
-						@unlink($file_array['tmp_name']);
-						$file_array['tmp_name'] = '';
-					} else {
-						// do the validation and storage stuff
-						$imageId = media_handle_sideload( $file_array, $postId, '');
+            preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png)/i', $src, $matches);
+            if (isset($matches[0]) && $matches[0]) {
+                $file_array['name'] = basename($matches[0]);
+                $file_array['tmp_name'] = $tmp;
+                if (is_wp_error($tmp)) {
+                    @unlink($file_array['tmp_name']);
+                    $file_array['tmp_name'] = '';
+                } else {
+                    // do the validation and storage stuff
+                    $imageId = media_handle_sideload($file_array, 0, '');
 
-						// If error storing permanently, unlink
-						if ( is_wp_error($imageId) ) {
-							@unlink($file_array['tmp_name']);
-						} else {
-							$newSrc = wp_get_attachment_url($imageId);
-							update_post_meta( $imageId, '_wpsf_parent', $postId );
-							$thumb_id = $imageId;
-						}
-					}
-				} else {
-					@unlink($tmp);
-				}
-	
-			} 
-			} else $thumb_id = '';
-			
-			$meta = get_post_meta($postId);
-			foreach ($meta as $key=>$item) {
-				delete_post_meta($postId, $key);
-			}
-			
-			$postId = wp_update_post(
-				array(
-					'ID' => (int) $postId,
-					'post_type' => $data['hidden_post_type'],
-					'post_status' => $data['hidden_post_status'],
-					'post_title' => $title,
-					'post_content' => $html,
-					'post_excerpt' => $excerpt,
-					'post_category' => $category,
-					'tags_input' => $tags
-				)
-			);	
-			if ($thumb_id != '') {
-			set_post_thumbnail( $postId, $thumb_id );
-			}
-			
-			if ($limited == true) {	
-				add_post_meta($postId, 'wpsm', $data['limit']);	
-			}
+                    // If error storing permanently, unlink
+                    if (is_wp_error($imageId)) {
+                        @unlink($file_array['tmp_name']);
+                    } else {
+                        $newSrc = wp_get_attachment_url($imageId);
+                        if ($imageIds == '')
+                            $imageIds = $imageId;
+                        else
+                            $imageIds .= ', ' . $imageId;
+                    }
+                }
+            } else {
+                @unlink($tmp);
+            }
 
-			$redirect_url = wp_scraper_url('wp-scraper');
-			$response['redirect_url'] = $redirect_url.'&pid='.$postId;
-			$response['pid'] = $postId;
-			$response['title'] = $title;
-			$response['view'] = get_permalink($postId);
-			$response['edit'] = get_edit_post_link($postId);
-			$response = preg_replace_callback(
-			'/\\\\u([0-9a-zA-Z]{4})/',
-			function ($matches) {
-				return mb_convert_encoding(pack('H*',$matches[1]),'UTF-8','UTF-16');
-			},
-			json_encode($response)
-			);
-			echo $response;
-			exit;
-	}
-	
-	return array();
+            // Replace images url in code
+            if ($newSrc) {
+                $html = str_replace($origSrc, $newSrc, $html);
+            }
+        }
+
+        if ($data['featured_image']) {
+            $feat_image = $data['featured_image'];
+            if (is_numeric($feat_image)) {
+                $thumb_id = $feat_image;
+            } else {
+                $origSrc = $src = trim($data['featured_image']);
+
+                $parts = parse_url($src);
+                if (isset($parts['query']) && $parts['query']) {
+                    parse_str($parts['query'], $query);
+                    if (isset($query['action']) && ($query['action'] == 'downloader')) {
+                        $src = urldecode($query['url']);
+                    }
+                }
+
+                if (substr($src, 0, 2) == '//') {
+                    $src = 'http:' . $src;
+                }
+
+                // Download to temp folder
+                $tmp = download_url($src);
+                $file_array = array();
+                $newSrc = '';
+
+                preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png)/i', $src, $matches);
+                if (isset($matches[0]) && $matches[0]) {
+                    $file_array['name'] = basename($matches[0]);
+                    $file_array['tmp_name'] = $tmp;
+                    if (is_wp_error($tmp)) {
+                        @unlink($file_array['tmp_name']);
+                        $file_array['tmp_name'] = '';
+                    } else {
+                        // do the validation and storage stuff
+                        $imageId = media_handle_sideload($file_array, $postId, '');
+
+                        // If error storing permanently, unlink
+                        if (is_wp_error($imageId)) {
+                            @unlink($file_array['tmp_name']);
+                        } else {
+                            $newSrc = wp_get_attachment_url($imageId);
+                            update_post_meta($imageId, '_wpsf_parent', $postId);
+                            $thumb_id = $imageId;
+                        }
+                    }
+                } else {
+                    @unlink($tmp);
+                }
+            }
+        } else
+            $thumb_id = '';
+
+        $meta = get_post_meta($postId);
+        foreach ($meta as $key => $item) {
+            delete_post_meta($postId, $key);
+        }
+
+        $postId = wp_update_post(
+                array(
+                    'ID' => (int) $postId,
+                    'post_type' => $data['hidden_post_type'],
+                    'post_status' => $data['hidden_post_status'],
+                    'post_title' => $title,
+                    'post_content' => $html,
+                    'post_excerpt' => $excerpt,
+                    'post_category' => $category,
+                    'tags_input' => $tags
+                )
+        );
+        if ($thumb_id != '') {
+            set_post_thumbnail($postId, $thumb_id);
+        }
+
+        if ($limited == true) {
+            add_post_meta($postId, 'wpsm', $data['limit']);
+        }
+
+        $redirect_url = wp_scraper_url('wp-scraper');
+        $response['redirect_url'] = $redirect_url . '&pid=' . $postId;
+        $response['pid'] = $postId;
+        $response['title'] = $title;
+        $response['view'] = get_permalink($postId);
+        $response['edit'] = get_edit_post_link($postId);
+        $response = preg_replace_callback(
+                '/\\\\u([0-9a-zA-Z]{4})/', function ($matches) {
+            return mb_convert_encoding(pack('H*', $matches[1]), 'UTF-8', 'UTF-16');
+        }, json_encode($response)
+        );
+        echo $response;
+        exit;
+    }
+
+    return array();
 }
 
 /* Generate URL List Ajax Action */
 
-add_action( 'wp_ajax_wpsf_ajax_scrape', 'wp_scraper_scrape_site');
+add_action('wp_ajax_wpsf_ajax_scrape', 'wp_scraper_scrape_site');
+
 function wp_scraper_scrape_site() {
-		if (isset($_REQUEST['url'])) {
-			$url = $_REQUEST['url'];
-		} else die(json_encode(array('message' => 'ERROR', 'code' => 1329)));
-		if (isset($_REQUEST['fol'])) {
-			$fol = $_REQUEST['fol'];
-		} else die(json_encode(array('message' => 'ERROR', 'code' => 1330)));
-		if (isset($_REQUEST['num'])) {
-			$num = $_REQUEST['num'];
-		} else die(json_encode(array('message' => 'ERROR', 'code' => 1331)));
-		if (isset($_REQUEST['skp'])) {
-			$skp = $_REQUEST['skp'];
-		}
-		if (isset($_REQUEST['dep'])) {
-			$dep = $_REQUEST['dep'];
-		}
-		if (isset($_REQUEST['del'])) {
-			$del = $_REQUEST['del'];
-		}
-		if (isset($_REQUEST['typ'])) {
-			$typ = $_REQUEST['typ'];
-		}
-		if (isset($_REQUEST['mat'])) {
-			$mat = $_REQUEST['mat'];
-		}
-		
-set_time_limit(10000);
+    if (isset($_REQUEST['url'])) {
+        $url = $_REQUEST['url'];
+    } else
+        die(json_encode(array('message' => 'ERROR', 'code' => 1329)));
+    if (isset($_REQUEST['fol'])) {
+        $fol = $_REQUEST['fol'];
+    } else
+        die(json_encode(array('message' => 'ERROR', 'code' => 1330)));
+    if (isset($_REQUEST['num'])) {
+        $num = $_REQUEST['num'];
+    } else
+        die(json_encode(array('message' => 'ERROR', 'code' => 1331)));
+    if (isset($_REQUEST['skp'])) {
+        $skp = $_REQUEST['skp'];
+    }
+    if (isset($_REQUEST['dep'])) {
+        $dep = $_REQUEST['dep'];
+    }
+    if (isset($_REQUEST['del'])) {
+        $del = $_REQUEST['del'];
+    }
+    if (isset($_REQUEST['typ'])) {
+        $typ = $_REQUEST['typ'];
+    }
+    if (isset($_REQUEST['mat'])) {
+        $mat = $_REQUEST['mat'];
+    }
 
-include("includes/libs/PHPCrawler.class.php");
+    set_time_limit(10000);
 
-class WpScraperCrawler extends PHPCrawler 
-{
-	public static $url_list;
-	
-	private $i = 0;
-  function handleDocumentInfo(PHPCrawlerDocumentInfo $DocInfo) 
-  {
-    $lb = "\n";
+    include("includes/libs/PHPCrawler.class.php");
 
-    // Print the URL and the HTTP-status-Code
-    //echo "Page requested: ".$DocInfo->url." (".$DocInfo->http_status_code.")".$lb;
-    
-    // Print the refering URL
-    //echo "Referer-page: ".$DocInfo->referer_url.$lb;
-	$skp = $_REQUEST['skp'];
-    // Print if the content of the document was be recieved or not
-	if($skp) {
-		if( $this->i <= $skp) {
-			if ($DocInfo->received == true)
-			$this->i++;
-		} if($this->i > $skp) {
-			if ($DocInfo->received == true)
-			WpScraperCrawler::$url_list .= $DocInfo->url.",".$lb;
-		}
-	} else {
-		if ($DocInfo->received == true)
-			WpScraperCrawler::$url_list .= $DocInfo->url.",".$lb;
-	}
-      //echo "Content received: ".$DocInfo->bytes_received." bytes".$lb;
-    //else
-		//echo "";
-      //echo "Content not received".$lb; 
-    
-    // Now you should do something with the content of the actual
-    // received page or file ($DocInfo->source), we skip it in this example 
-    
-    //echo $lb;
-    
-    flush();
-  } 
-}
-		
-$crawler = new WpScraperCrawler();
+    class WpScraperCrawler extends PHPCrawler {
 
-$crawler->setURL($url);
+        public static $url_list;
+        private $i = 0;
 
-$crawler->setFollowMode($fol);
+        function handleDocumentInfo(PHPCrawlerDocumentInfo $DocInfo) {
+            $lb = "\n";
 
-$crawler->addContentTypeReceiveRule("#text/html#");
+            // Print the URL and the HTTP-status-Code
+            //echo "Page requested: ".$DocInfo->url." (".$DocInfo->http_status_code.")".$lb;
+            // Print the refering URL
+            //echo "Referer-page: ".$DocInfo->referer_url.$lb;
+            $skp = $_REQUEST['skp'];
+            // Print if the content of the document was be recieved or not
+            if ($skp) {
+                if ($this->i <= $skp) {
+                    if ($DocInfo->received == true)
+                        $this->i++;
+                } if ($this->i > $skp) {
+                    if ($DocInfo->received == true)
+                        WpScraperCrawler::$url_list .= $DocInfo->url . "," . $lb;
+                }
+            } else {
+                if ($DocInfo->received == true)
+                    WpScraperCrawler::$url_list .= $DocInfo->url . "," . $lb;
+            }
+            //echo "Content received: ".$DocInfo->bytes_received." bytes".$lb;
+            //else
+            //echo "";
+            //echo "Content not received".$lb; 
+            // Now you should do something with the content of the actual
+            // received page or file ($DocInfo->source), we skip it in this example 
+            //echo $lb;
 
-$crawler->obeyNoFollowTags(true);
-$crawler->obeyRobotsTxt(true);
-$crawler->excludeLinkSearchDocumentSections(PHPCrawlerLinkSearchDocumentSections::ALL_SPECIAL_SECTIONS);
+            flush();
+        }
 
-$crawler->addURLFilterRule("#\.(jpg|jpeg|gif|png)$# i");
+    }
 
-$crawler->enableCookieHandling(true);
+    $crawler = new WpScraperCrawler();
 
-if($skp) $num = $skp + $num;
-$crawler->setRequestLimit($num);
+    $crawler->setURL($url);
 
-if (isset($dep) && !empty($dep)) {
-	$crawler->setCrawlingDepthLimit($dep);
-}
-if (isset($del) && !empty($del)) {
-	$crawler->setRequestDelay($del);
-}
+    $crawler->setFollowMode($fol);
 
-/*if ($fol == 3) {
-	$path = parse_url($url);
-	$folders = explode('/', $path['path']);
-	if (substr($path['path'], -1) != '/') {
-		array_pop($folders);
-	}
-	$new_path = implode('/',$folders);
-	echo 'new_path '.$new_path;
-	if ($path['scheme'])
-	$last_path = $path['scheme'].'://'.$path['host'].$new_path;
-	else $last_path = $new_path;
-	echo 'lastpath '.$last_path;
-		if (isset($typ) && isset($mat) && !empty($mat)) {
-			if ($typ == 'contains') {
-				$crawler->addURLFollowRule("#^(?=.*".$last_path.")(?=.*\b".$mat."\b)$# i");
-			}
-			if ($typ == 'ends') {
-				$crawler->addURLFollowRule("#^(?=.*".$last_path.")(?=".$mat.")$# i");
-			}
-		} else $crawler->addURLFollowRule("#(".$last_path.")# i");
-}*/
+    $crawler->addContentTypeReceiveRule("#text/html#");
 
-if (isset($typ) && isset($mat) && !empty($mat)) {
-	if ($typ == 'contains') {
-		$crawler->addURLFollowRule("#(\b".$mat."\b)# i");
-	}
-	if ($typ == 'ends') {
-		$crawler->addURLFollowRule("#(".$mat.")$# i");
-	}
-}
+    $crawler->obeyNoFollowTags(true);
+    $crawler->obeyRobotsTxt(true);
+    $crawler->excludeLinkSearchDocumentSections(PHPCrawlerLinkSearchDocumentSections::ALL_SPECIAL_SECTIONS);
+
+    $crawler->addURLFilterRule("#\.(jpg|jpeg|gif|png)$# i");
+
+    $crawler->enableCookieHandling(true);
+
+    if ($skp)
+        $num = $skp + $num;
+    $crawler->setRequestLimit($num);
+
+    if (isset($dep) && !empty($dep)) {
+        $crawler->setCrawlingDepthLimit($dep);
+    }
+    if (isset($del) && !empty($del)) {
+        $crawler->setRequestDelay($del);
+    }
+
+    /* if ($fol == 3) {
+      $path = parse_url($url);
+      $folders = explode('/', $path['path']);
+      if (substr($path['path'], -1) != '/') {
+      array_pop($folders);
+      }
+      $new_path = implode('/',$folders);
+      echo 'new_path '.$new_path;
+      if ($path['scheme'])
+      $last_path = $path['scheme'].'://'.$path['host'].$new_path;
+      else $last_path = $new_path;
+      echo 'lastpath '.$last_path;
+      if (isset($typ) && isset($mat) && !empty($mat)) {
+      if ($typ == 'contains') {
+      $crawler->addURLFollowRule("#^(?=.*".$last_path.")(?=.*\b".$mat."\b)$# i");
+      }
+      if ($typ == 'ends') {
+      $crawler->addURLFollowRule("#^(?=.*".$last_path.")(?=".$mat.")$# i");
+      }
+      } else $crawler->addURLFollowRule("#(".$last_path.")# i");
+      } */
+
+    if (isset($typ) && isset($mat) && !empty($mat)) {
+        if ($typ == 'contains') {
+            $crawler->addURLFollowRule("#(\b" . $mat . "\b)# i");
+        }
+        if ($typ == 'ends') {
+            $crawler->addURLFollowRule("#(" . $mat . ")$# i");
+        }
+    }
 //contains rule $crawler->addURLFollowRule("#^http://php.net/manual/en/.*mysql[^a-z]# i");
 //ends in rule $crawler->addURLFollowRule("#(htm|html)$# i");
 
-$crawler->go();
+    $crawler->go();
 
 // At the end, after the process is finished, we print a short
 //$report (see method getProcessReport() for more information)
-/*$report = $crawler->getProcessReport();
+    /* $report = $crawler->getProcessReport();
 
-$lb = "\n";
-    
-$page = "Summary:".$lb;
-$page .= "Links followed: ".$report->links_followed.$lb;
-$page .= "Documents received: ".$report->files_received.$lb;
-$page .= "Bytes received: ".$report->bytes_received." bytes".$lb;
-$page .= "Process runtime: ".$report->process_runtime." sec".$lb;*/
+      $lb = "\n";
 
-echo WpScraperCrawler::$url_list;
-wp_die();
+      $page = "Summary:".$lb;
+      $page .= "Links followed: ".$report->links_followed.$lb;
+      $page .= "Documents received: ".$report->files_received.$lb;
+      $page .= "Bytes received: ".$report->bytes_received." bytes".$lb;
+      $page .= "Process runtime: ".$report->process_runtime." sec".$lb; */
+
+    echo WpScraperCrawler::$url_list;
+    wp_die();
 }
 
 function wp_scraper_help_page() {
-	echo '<style type="text/css">
+    echo '<style type="text/css">
 	.fusion-one-half img {
 		max-width: 100%;
 		box-shadow: 3px 3px 5px 5px #ccc;
@@ -1983,7 +1980,7 @@ directory
 
 </div></div><div class="fusion-one-half fusion-layout-column fusion-column-last fusion-spacing-yes" style="margin-top:0px;margin-bottom:20px;"><div class="fusion-column-wrapper"><p>
 
-<img class="alignnone size-full wp-image-126" src="'.plugins_url( "images/Install-Plugin.jpg", __FILE__ ).'" alt="Install Plugin" />
+<img class="alignnone size-full wp-image-126" src="' . plugins_url("images/Install-Plugin.jpg", __FILE__) . '" alt="Install Plugin" />
 
 </p>
 </div></div><div class="fusion-clearfix"></div><div class="fusion-sep-clear"></div><div class="fusion-separator fusion-full-width-sep sep-single" style="border-color:#e0dede;border-top-width:1px;margin-left: auto;margin-right: auto;margin-top:px;margin-bottom:30px;"></div>
@@ -2018,7 +2015,7 @@ Depending on server resources adding content to your post may take anywhere from
 
 </div></div><div class="fusion-one-half fusion-layout-column fusion-column-last fusion-spacing-yes" style="margin-top:0px;margin-bottom:20px;"><div class="fusion-column-wrapper"><p>
 
-<img class="alignnone size-full wp-image-110" src="'.plugins_url( "images/Select-Content.jpg", __FILE__ ).'" alt="Content Selection - Single Scrape" />
+<img class="alignnone size-full wp-image-110" src="' . plugins_url("images/Select-Content.jpg", __FILE__) . '" alt="Content Selection - Single Scrape" />
 
 </p>
 </div></div><div class="fusion-clearfix"></div><div class="fusion-sep-clear"></div><div class="fusion-separator fusion-full-width-sep sep-single" style="border-color:#e0dede;border-top-width:1px;margin-left: auto;margin-right: auto;margin-top:px;margin-bottom:30px;"></div>
@@ -2076,7 +2073,7 @@ Select an image from the source page or add your own.
 
 </div></div><div class="fusion-one-half fusion-layout-column fusion-column-last fusion-spacing-yes" style="margin-top:0px;margin-bottom:20px;"><div class="fusion-column-wrapper"><p>
 
-<img class="alignnone size-full wp-image-205" src="'.plugins_url( "images/Single-Scrape.jpg", __FILE__ ).'" alt="Single Scrape" />
+<img class="alignnone size-full wp-image-205" src="' . plugins_url("images/Single-Scrape.jpg", __FILE__) . '" alt="Single Scrape" />
 
 </p>
 </div></div><div class="fusion-clearfix"></div><div class="fusion-sep-clear"></div><div class="fusion-separator fusion-full-width-sep sep-single" style="border-color:#e0dede;border-top-width:1px;margin-left: auto;margin-right: auto;margin-top:px;margin-bottom:30px;"></div>
@@ -2124,7 +2121,7 @@ For example, choosing “contains foo” above would only add webpages to the li
 
 </div></div><div class="fusion-one-half fusion-layout-column fusion-column-last fusion-spacing-yes" style="margin-top:0px;margin-bottom:20px;"><div class="fusion-column-wrapper"><p>
 
-<img class="alignnone size-full wp-image-110" src="'.plugins_url( "images/URL-Selection.jpg", __FILE__ ).'" alt="Generating URL\'s" />
+<img class="alignnone size-full wp-image-110" src="' . plugins_url("images/URL-Selection.jpg", __FILE__) . '" alt="Generating URL\'s" />
 
 </p>
 </div></div><div class="fusion-clearfix"></div><div class="fusion-sep-clear"></div><div class="fusion-separator fusion-full-width-sep sep-single" style="border-color:#e0dede;border-top-width:1px;margin-left: auto;margin-right: auto;margin-top:px;margin-bottom:30px;"></div><div class="fusion-one-half fusion-layout-column fusion-spacing-yes" style="margin-top:0px;margin-bottom:20px;"><div class="fusion-column-wrapper">
@@ -2179,7 +2176,7 @@ Select an image from the source page or add your own.
 
 </div></div><div class="fusion-one-half fusion-layout-column fusion-column-last fusion-spacing-yes" style="margin-top:0px;margin-bottom:20px;"><div class="fusion-column-wrapper"><p>
 
-<img class="alignnone size-full wp-image-133" src="'.plugins_url( "images/Multiple-Scrape.jpg", __FILE__ ).'" alt="Multiple Scrape"  />
+<img class="alignnone size-full wp-image-133" src="' . plugins_url("images/Multiple-Scrape.jpg", __FILE__) . '" alt="Multiple Scrape"  />
 
 </p>
 </div></div><div class="fusion-clearfix"></div><div class="fusion-sep-clear"></div><div class="fusion-separator fusion-full-width-sep sep-single" style="border-color:#e0dede;border-top-width:1px;margin-left: auto;margin-right: auto;margin-top:px;margin-bottom:30px;"></div><div class="fusion-one-half fusion-layout-column fusion-spacing-yes" style="margin-top:0px;margin-bottom:20px;"><div class="fusion-column-wrapper">
@@ -2195,7 +2192,7 @@ Select an image from the source page or add your own.
 
 </div></div><div class="fusion-one-half fusion-layout-column fusion-column-last fusion-spacing-yes" style="margin-top:0px;margin-bottom:20px;"><div class="fusion-column-wrapper"><p>
 
-<img class="alignnone size-full wp-image-205" src="'.plugins_url( "images/Results.jpg", __FILE__ ).'" alt="Scraper Results" />
+<img class="alignnone size-full wp-image-205" src="' . plugins_url("images/Results.jpg", __FILE__) . '" alt="Scraper Results" />
 
 </p>
 </div></div><div class="fusion-clearfix"></div><div class="fusion-sep-clear"></div><div class="fusion-separator fusion-full-width-sep sep-single" style="border-color:#e0dede;border-top-width:1px;margin-left: auto;margin-right: auto;margin-top:px;margin-bottom:30px;"></div>
@@ -2230,7 +2227,7 @@ Once your live scrape is created, a new entry will be added to the Live Scrape S
 
 </div></div><div class="fusion-one-half fusion-layout-column fusion-column-last fusion-spacing-yes" style="margin-top:0px;margin-bottom:20px;"><div class="fusion-column-wrapper"><p>
 
-<img class="alignnone size-full wp-image-205" src="'.plugins_url( "images/Live-Scrape.png", __FILE__ ).'" alt="Live Scrape" style="box-shadow: none !important;" />
+<img class="alignnone size-full wp-image-205" src="' . plugins_url("images/Live-Scrape.png", __FILE__) . '" alt="Live Scrape" style="box-shadow: none !important;" />
 
 
 </p>
@@ -2252,143 +2249,151 @@ For more information about copyright laws please visit
 
 <a href="http://www.wpscraper.com/" target="_blank">For more information and to purchase WP Scraper Pro please visit us at wpscraper.com</a>
 ';
-
-
 }
 
 function wpsf_body_button() {
-	return '<a id="choose_body_content" title="Click to select content you want to use for the post content. Then click the button below to add it to the post content field." href="#TB_inline?width=600&height=550&inlineId=content-extractor" class="thickbox button block-select-btn">Choose Post Content</a>';
+    return '<a id="choose_body_content" title="Click to select content you want to use for the post content. Then click the button below to add it to the post content field." href="#TB_inline?width=600&height=550&inlineId=content-extractor" class="thickbox button block-select-btn">Choose Post Content</a>';
 }
 
-function wpsf_post_tags_meta_box( $post, $box ) {
-	$defaults = array( 'taxonomy' => 'post_tag' );
-	if ( ! isset( $box['args'] ) || ! is_array( $box['args'] ) ) {
-		$args = array();
-	} else {
-		$args = $box['args'];
-	}
-	$r = wp_parse_args( $args, $defaults );
-	$tax_name = esc_attr( $r['taxonomy'] );
-	$taxonomy = get_taxonomy( $r['taxonomy'] );
-	$user_can_assign_terms = current_user_can( $taxonomy->cap->assign_terms );
-	$comma = _x( ',', 'tag delimiter' );
-?>
-<div class="tagsdiv" id="<?php echo $tax_name; ?>">
-	<div class="jaxtag">
-	<div class="nojs-tags hide-if-js">
-	<p><?php echo $taxonomy->labels->add_or_remove_items; ?></p>
-	<textarea name="<?php echo "tax_input-$tax_name"; ?>" rows="3" cols="20" class="the-tags" id="tax-input-
-	<?php echo $tax_name; ?>" 
-	<?php disabled( ! $user_can_assign_terms ); ?>>
-	<?php if (isset($post->ID)) { echo str_replace( ',', $comma . ' ', get_terms_to_edit( $post->ID, $tax_name ) );} else echo str_replace( ',', $comma . ' ', get_terms_to_edit( '', $tax_name ) ); // textarea_escaped by esc_attr() ?></textarea></div>
- 	<?php if ( $user_can_assign_terms ) : ?>
-	<div class="ajaxtag hide-if-no-js">
-		<label class="screen-reader-text" for="new-tag-<?php echo $tax_name; ?>"><?php echo $box['title']; ?></label>
-        <input class="wpsf-selector" type="text" name="tags_selector" value="" id="tags_selector" />
-		<p><input type="text" id="new-tag-<?php echo $tax_name; ?>" name="newtag-<?php echo $tax_name; ?>" class="newtag form-input-tip" size="16" autocomplete="off" value="" />
-		<input type="button" class="button tagadd" value="<?php esc_attr_e('Add'); ?>" /></p>
-		<a id="choose_tags_content" title="Click to select content you want to use for the tags. Then click the button below to add it to the tags field. Remember to use a field that has comma separated values." href="#TB_inline?width=600&height=550&inlineId=content-extractor" class="thickbox button block-select-btn">Choose Tags</a>
-	</div>
-	<p class="howto"><?php echo $taxonomy->labels->separate_items_with_commas; ?></p>
-	<?php endif; ?>
-	</div>
-	<div class="tagchecklist"></div>
-</div>
-<?php if ( $user_can_assign_terms ) : ?>
-<p class="hide-if-no-js"><a href="#titlediv" class="tagcloud-link" id="link-<?php echo $tax_name; ?>"><?php echo $taxonomy->labels->choose_from_most_used; ?></a></p>
-<?php endif; ?>
-<?php
+function wpsf_post_tags_meta_box($post, $box) {
+    $defaults = array('taxonomy' => 'post_tag');
+    if (!isset($box['args']) || !is_array($box['args'])) {
+        $args = array();
+    } else {
+        $args = $box['args'];
+    }
+    $r = wp_parse_args($args, $defaults);
+    $tax_name = esc_attr($r['taxonomy']);
+    $taxonomy = get_taxonomy($r['taxonomy']);
+    $user_can_assign_terms = current_user_can($taxonomy->cap->assign_terms);
+    $comma = _x(',', 'tag delimiter');
+    ?>
+    <div class="tagsdiv" id="<?php echo $tax_name; ?>">
+        <div class="jaxtag">
+            <div class="nojs-tags hide-if-js">
+                <p><?php echo $taxonomy->labels->add_or_remove_items; ?></p>
+                <textarea name="<?php echo "tax_input-$tax_name"; ?>" rows="3" cols="20" class="the-tags" id="tax-input-
+    <?php echo $tax_name; ?>" 
+    <?php disabled(!$user_can_assign_terms); ?>>
+    <?php if (isset($post->ID)) {
+        echo str_replace(',', $comma . ' ', get_terms_to_edit($post->ID, $tax_name));
+    } else echo str_replace(',', $comma . ' ', get_terms_to_edit('', $tax_name)); // textarea_escaped by esc_attr()  ?></textarea></div>
+                <?php if ($user_can_assign_terms) : ?>
+                <div class="ajaxtag hide-if-no-js">
+                    <label class="screen-reader-text" for="new-tag-<?php echo $tax_name; ?>"><?php echo $box['title']; ?></label>
+                    <input class="wpsf-selector" type="text" name="tags_selector" value="" id="tags_selector" />
+                    <p><input type="text" id="new-tag-<?php echo $tax_name; ?>" name="newtag-<?php echo $tax_name; ?>" class="newtag form-input-tip" size="16" autocomplete="off" value="" />
+                        <input type="button" class="button tagadd" value="<?php esc_attr_e('Add'); ?>" /></p>
+                    <a id="choose_tags_content" title="Click to select content you want to use for the tags. Then click the button below to add it to the tags field. Remember to use a field that has comma separated values." href="#TB_inline?width=600&height=550&inlineId=content-extractor" class="thickbox button block-select-btn">Choose Tags</a>
+                </div>
+                <p class="howto"><?php echo $taxonomy->labels->separate_items_with_commas; ?></p>
+    <?php endif; ?>
+        </div>
+        <div class="tagchecklist"></div>
+    </div>
+    <?php if ($user_can_assign_terms) : ?>
+        <p class="hide-if-no-js"><a href="#titlediv" class="tagcloud-link" id="link-<?php echo $tax_name; ?>"><?php echo $taxonomy->labels->choose_from_most_used; ?></a></p>
+    <?php endif; ?>
+    <?php
 }
 
-function wpsf_post_categories_meta_box( $post, $box ) {
-	$defaults = array( 'taxonomy' => 'category' );
-	if ( ! isset( $box['args'] ) || ! is_array( $box['args'] ) ) {
-		$args = array();
-	} else {
-		$args = $box['args'];
-	}
-	$r = wp_parse_args( $args, $defaults );
-	$tax_name = esc_attr( $r['taxonomy'] );
-	$taxonomy = get_taxonomy( $r['taxonomy'] );
-	?>
-	<div id="taxonomy-<?php echo $tax_name; ?>" class="categorydiv">
-    	<input class="wpsf-selector" type="text" name="cat_selector" value="" id="cat_selector" />
-		<ul id="<?php echo $tax_name; ?>-tabs" class="category-tabs">
-			<li class="tabs"><a href="#<?php echo $tax_name; ?>-all"><?php echo $taxonomy->labels->all_items; ?></a></li>
-			<li class="hide-if-no-js"><a href="#<?php echo $tax_name; ?>-pop"><?php _e( 'Most Used' ); ?></a></li>
-		</ul>
+function wpsf_post_categories_meta_box($post, $box) {
+    $defaults = array('taxonomy' => 'category');
+    if (!isset($box['args']) || !is_array($box['args'])) {
+        $args = array();
+    } else {
+        $args = $box['args'];
+    }
+    $r = wp_parse_args($args, $defaults);
+    $tax_name = esc_attr($r['taxonomy']);
+    $taxonomy = get_taxonomy($r['taxonomy']);
+    ?>
+    <div id="taxonomy-<?php echo $tax_name; ?>" class="categorydiv">
+        <input class="wpsf-selector" type="text" name="cat_selector" value="" id="cat_selector" />
+        <ul id="<?php echo $tax_name; ?>-tabs" class="category-tabs">
+            <li class="tabs"><a href="#<?php echo $tax_name; ?>-all"><?php echo $taxonomy->labels->all_items; ?></a></li>
+            <li class="hide-if-no-js"><a href="#<?php echo $tax_name; ?>-pop"><?php _e('Most Used'); ?></a></li>
+        </ul>
 
-		<div id="<?php echo $tax_name; ?>-pop" class="tabs-panel" style="display: none;">
-			<ul id="<?php echo $tax_name; ?>checklist-pop" class="categorychecklist form-no-clear" >
-				<?php $popular_ids = wp_popular_terms_checklist( $tax_name ); ?>
-			</ul>
-		</div>
+        <div id="<?php echo $tax_name; ?>-pop" class="tabs-panel" style="display: none;">
+            <ul id="<?php echo $tax_name; ?>checklist-pop" class="categorychecklist form-no-clear" >
+    <?php $popular_ids = wp_popular_terms_checklist($tax_name); ?>
+            </ul>
+        </div>
 
-		<div id="<?php echo $tax_name; ?>-all" class="tabs-panel">
-			<?php
-            $name = ( $tax_name == 'category' ) ? 'post_category' : 'tax_input[' . $tax_name . ']';
-            echo "<input id='post_category' type='hidden' name='{$name}[]' value='0' />"; // Allows for an empty term set to be sent. 0 is an invalid Term ID and will be ignored by empty() checks.
-            ?>
-			<ul id="<?php echo $tax_name; ?>checklist" data-wp-lists="list:<?php echo $tax_name; ?>" class="categorychecklist form-no-clear">
-				<?php if (isset($post->ID)) { wp_terms_checklist( $post->ID, array( 'taxonomy' => $tax_name, 'popular_cats' => $popular_ids ) );} else wp_terms_checklist( '', array( 'taxonomy' => $tax_name, 'popular_cats' => $popular_ids ) );  ?>
-			</ul>
-		</div>
-	<?php if ( current_user_can( $taxonomy->cap->edit_terms ) ) : ?>
-			<div id="<?php echo $tax_name; ?>-adder" class="wp-hidden-children">
-				<h4>
-					<a id="<?php echo $tax_name; ?>-add-toggle" href="#<?php echo $tax_name; ?>-add" class="hide-if-no-js">
-						<?php
-							/* translators: %s: add new taxonomy label */
-							printf( __( '+ %s' ), $taxonomy->labels->add_new_item );
-						?>
-					</a>
-				</h4>
-				<p id="<?php echo $tax_name; ?>-add" class="category-add wp-hidden-child">
-					<label class="screen-reader-text" for="new<?php echo $tax_name; ?>"><?php echo $taxonomy->labels->add_new_item; ?></label>
-					<input type="text" name="new<?php echo $tax_name; ?>" id="new<?php echo $tax_name; ?>" class="form-required form-input-tip" value="<?php echo esc_attr( $taxonomy->labels->new_item_name ); ?>" aria-required="true"/>
-					<label class="screen-reader-text" for="new<?php echo $tax_name; ?>_parent">
-						<?php echo $taxonomy->labels->parent_item_colon; ?>
-					</label>
-					<?php wp_dropdown_categories( array( 'taxonomy' => $tax_name, 'hide_empty' => 0, 'name' => 'new' . $tax_name . '_parent', 'orderby' => 'name', 'hierarchical' => 1, 'show_option_none' => '&mdash; ' . $taxonomy->labels->parent_item . ' &mdash;' ) ); ?>
-					<input type="button" id="<?php echo $tax_name; ?>-add-submit" data-wp-lists="add:<?php echo $tax_name; ?>checklist:<?php echo $tax_name; ?>-add" class="button category-add-submit" value="<?php echo esc_attr( $taxonomy->labels->add_new_item ); ?>" />
-					
-					<?php wp_nonce_field( 'add-' . $tax_name, '_ajax_nonce-add-' . $tax_name, false ); ?>
-					<span id="<?php echo $tax_name; ?>-ajax-response"></span>
-				</p>
-			</div>
-		<?php endif; ?>
+        <div id="<?php echo $tax_name; ?>-all" class="tabs-panel">
+    <?php
+    $name = ( $tax_name == 'category' ) ? 'post_category' : 'tax_input[' . $tax_name . ']';
+    echo "<input id='post_category' type='hidden' name='{$name}[]' value='0' />"; // Allows for an empty term set to be sent. 0 is an invalid Term ID and will be ignored by empty() checks.
+    ?>
+            <ul id="<?php echo $tax_name; ?>checklist" data-wp-lists="list:<?php echo $tax_name; ?>" class="categorychecklist form-no-clear">
+            <?php if (isset($post->ID)) {
+                wp_terms_checklist($post->ID, array('taxonomy' => $tax_name, 'popular_cats' => $popular_ids));
+            } else wp_terms_checklist('', array('taxonomy' => $tax_name, 'popular_cats' => $popular_ids)); ?>
+            </ul>
+        </div>
+        <?php if (current_user_can($taxonomy->cap->edit_terms)) : ?>
+            <div id="<?php echo $tax_name; ?>-adder" class="wp-hidden-children">
+                <h4>
+                    <a id="<?php echo $tax_name; ?>-add-toggle" href="#<?php echo $tax_name; ?>-add" class="hide-if-no-js">
+                        <?php
+                        /* translators: %s: add new taxonomy label */
+                        printf(__('+ %s'), $taxonomy->labels->add_new_item);
+                        ?>
+                    </a>
+                </h4>
+                <p id="<?php echo $tax_name; ?>-add" class="category-add wp-hidden-child">
+                    <label class="screen-reader-text" for="new<?php echo $tax_name; ?>"><?php echo $taxonomy->labels->add_new_item; ?></label>
+                    <input type="text" name="new<?php echo $tax_name; ?>" id="new<?php echo $tax_name; ?>" class="form-required form-input-tip" value="<?php echo esc_attr($taxonomy->labels->new_item_name); ?>" aria-required="true"/>
+                    <label class="screen-reader-text" for="new<?php echo $tax_name; ?>_parent">
+                        <?php echo $taxonomy->labels->parent_item_colon; ?>
+                    </label>
+                    <?php wp_dropdown_categories(array('taxonomy' => $tax_name, 'hide_empty' => 0, 'name' => 'new' . $tax_name . '_parent', 'orderby' => 'name', 'hierarchical' => 1, 'show_option_none' => '&mdash; ' . $taxonomy->labels->parent_item . ' &mdash;')); ?>
+                    <input type="button" id="<?php echo $tax_name; ?>-add-submit" data-wp-lists="add:<?php echo $tax_name; ?>checklist:<?php echo $tax_name; ?>-add" class="button category-add-submit" value="<?php echo esc_attr($taxonomy->labels->add_new_item); ?>" />
+
+                    <?php wp_nonce_field('add-' . $tax_name, '_ajax_nonce-add-' . $tax_name, false); ?>
+                    <span id="<?php echo $tax_name; ?>-ajax-response"></span>
+                </p>
+            </div>
+        <?php endif; ?>
         <a id="choose_cat_content" title="Click to select content you want to use for the category. Then click the button below to add it to the categories field." href="#TB_inline?width=600&height=550&inlineId=content-extractor" class="thickbox button block-select-btn">Choose a New Category</a>
-	</div>
-	<?php
+    </div>
+    <?php
 }
 
-function wpsf_post_thumbnail_meta_box( $post ) {
-	echo '<img class="wpsf_featured" src="" style="display:none" />
+function wpsf_post_thumbnail_meta_box($post) {
+    echo '<img class="wpsf_featured" src="" style="display:none" />
 		<input class="wpsf-selector" type="text" name="fi_selector" value="" id="fi_selector" />
 		<input id="wpsf_featured_image" type="hidden" name="featured_image" value="" />
 		<p class="hide-if-no-js"> 
 		<a id="set-featured-thumbnail" class="setfeatured" href="#" title="Set featured image">Set featured image</a>
 		</p>
 		<a id="choose_image_content" title="Click to select the image you want to use for the featured image. Then click the button below to add it to the featured image field." href="#TB_inline?width=600&height=550&inlineId=content-extractor" class="thickbox button block-select-btn">Choose a New Featured Image</a>';
-	//echo _wp_post_thumbnail_html( $thumbnail_id, $post->ID );
+    //echo _wp_post_thumbnail_html( $thumbnail_id, $post->ID );
 }
 
-		
-add_action( 'wp_ajax_wpsf_custom_fields', 'wp_scraper_custom_fields');
+add_action('wp_ajax_wpsf_custom_fields', 'wp_scraper_custom_fields');
+
 function wp_scraper_custom_fields() {
-	if (isset($_REQUEST['post_type'])) {
-		$post_type = $_REQUEST['post_type'];
-	} else die(json_encode(array('message' => 'ERROR', 'code' => 2000)));
-	
-	$obj = get_post_type_object( $post_type );
-	$title = post_type_supports($post_type, 'title');
-	$editor = post_type_supports($post_type, 'editor');
-	$thumbnail = post_type_supports($post_type, 'thumbnail');
-	
-	if ($post_type == 'post') { $tags = 1; $cat = 1; }
-	else {$tags = 0; $cat = 0;}
-	echo $title.', '.$editor.', '.$thumbnail.', '.$tags.', '.$cat;
-	//print('<pre>'.print_r($obj,true).'</pre>');
-	die();
+    if (isset($_REQUEST['post_type'])) {
+        $post_type = $_REQUEST['post_type'];
+    } else
+        die(json_encode(array('message' => 'ERROR', 'code' => 2000)));
+
+    $obj = get_post_type_object($post_type);
+    $title = post_type_supports($post_type, 'title');
+    $editor = post_type_supports($post_type, 'editor');
+    $thumbnail = post_type_supports($post_type, 'thumbnail');
+
+    if ($post_type == 'post') {
+        $tags = 1;
+        $cat = 1;
+    } else {
+        $tags = 0;
+        $cat = 0;
+    }
+    echo $title . ', ' . $editor . ', ' . $thumbnail . ', ' . $tags . ', ' . $cat;
+    //print('<pre>'.print_r($obj,true).'</pre>');
+    die();
 }
 ?>

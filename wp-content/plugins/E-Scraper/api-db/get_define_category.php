@@ -21,13 +21,6 @@ mysqli_set_charset($link,'utf8');
 
 
 
- 
-// retrieve the table and key from the path
-// $table = preg_replace('/[^a-z0-9_]+/i','',array_shift($request));
-//  // $key = array_shift($request)+0;
-//  $key = array_shift($request);
-
-
 
 
 if($token == ''){

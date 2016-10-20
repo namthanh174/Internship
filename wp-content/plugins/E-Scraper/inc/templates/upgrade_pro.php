@@ -19,11 +19,15 @@
             
 
             </table>
-            <input class="button-primary" type="submit" id="upgrade_pro_submit" name="upgrade_pro_submit" value="<?php esc_attr_e( 'Submit' ); ?>" />
-            <input class="delete button-primary" type="button" id="upgrade_pro_delete" name="upgrade_pro_delete" value="<?php esc_attr_e( 'Delete' ); ?>" />
-            <!-- <input class="delete button-primary" type="button" id="check_api" name="upgrade_pro_delete" value="<?php //esc_attr_e( 'check api' ); ?>" /> -->
+            <input class="button-primary" type="submit" id="upgrade_pro_submit" name="upgrade_pro_submit" value="<?php esc_attr_e( 'Upgrade To Pro' ); ?>" />
+            <input class="delete button-primary" type="button" id="upgrade_pro_delete" name="upgrade_pro_delete" value="<?php esc_attr_e( 'Reset License' ); ?>" />
+            
 
 
             <input type="hidden" name="isProVersion" value="true" />
+            
+            
 
 </form>
+
+<!--<button id="check_api"> Check API </button>-->

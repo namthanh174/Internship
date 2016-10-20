@@ -7,6 +7,48 @@
 	padding-left: 40%;
 }*/
 
+
+/*.ui-tabs .ui-tabs-nav
+{
+background: lightblue;
+}*/
+
+/*.ui-tabs .ui-tabs-panel  //just in case you want to change the panel 
+{
+background: blue;
+}*/
+/*.ui-tabs .ui-tabs-anchor  //just in case you want to change the panel 
+{
+
+
+}
+*/
+/*
+.ui-tabs .ui-tabs-nav li {
+    width:20%;
+    text-align: center;
+}
+.ui-tabs .ui-tabs-nav li a {
+    display: inline-block;
+    float: none;
+    padding: 5px;
+    text-decoration: none;
+    width: 100%;
+}
+*/
+
+
+
+
+
+/*.form-table tr{
+    padding: 0;
+}*/
+
+
+
+
+
 .title_return {
     color: blue;
     font-size: 15px;
@@ -139,3 +181,87 @@
             font-weight: bold;
             text-shadow: 1px 1px 0 #fff;
          }
+
+
+
+
+
+
+
+
+
+
+
+
+/*.ui-widget.success-dialog {
+    font-family: Verdana,Arial,sans-serif;
+    font-size: .8em;
+}
+
+.ui-widget-content.success-dialog {
+    background: #F9F9F9;
+    border: 1px solid #00b9eb;
+    color: #222222;
+}
+
+.ui-dialog.success-dialog {
+    left: 0;
+    outline: 0 none;
+    padding: 0 !important;
+    position: absolute;
+    top: 0;
+}
+
+.ui-dialog.success-dialog .ui-dialog-content {
+    background: none repeat scroll 0 0 transparent;
+    border: 0 none;
+    overflow: auto;
+    position: relative;
+    padding: 0 !important;
+    margin: 0;
+}
+
+.ui-dialog.success-dialog .ui-widget-header {
+    background: #00b9eb;
+    border: 0;
+    color: #fff;
+    font-weight: normal;
+}
+
+.ui-dialog.success-dialog .ui-dialog-titlebar {
+    padding: 0.1em .5em;
+    position: relative;
+    font-size: 1em;
+}
+.ui-button-text{
+    font-size: 1em;
+    color:black !important;
+}*/
+
+.ui-dialog-titlebar-close {
+    visibility: hidden;
+    }
+.ui-widget-content.success-dialog {
+    background: #F9F9F9;
+    border: 1px solid #00b9eb;
+    color: #222222;
+}
+
+.ui-dialog.success-dialog .ui-widget-header {
+    background: #00b9eb;
+    border: 0;
+    color: #fff;
+    font-weight: normal;
+}
+
+.ui-widget-content.error_dialog{
+    background: #F9F9F9;
+    border: 1px solid #00b9eb;
+    color: #222222;
+}
+.ui-dialog.error_dialog .ui-widget-header {
+    background: #ca4a1f;
+    border: 0;
+    color: #fff;
+    font-weight: normal;
+}
